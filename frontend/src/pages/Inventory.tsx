@@ -3,7 +3,8 @@ import api from '../lib/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import AddProductModal from '../components/inventory/AddProductModal';
 import EditProductModal from '../components/inventory/EditProductModal';
-import { Package, Plus, Search, Edit3, Trash2 } from 'lucide-react';
+import ProductDetailsModal from '../components/inventory/ProductDetailsModal';
+import { Package, Plus, Search, Edit3, Trash2, Eye } from 'lucide-react';
 
 interface Product {
   id_producto: number;
@@ -24,6 +25,7 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -107,7 +109,14 @@ export default function InventoryPage() {
                 filteredProducts.map((product, index) => {
                   if (!product) return null;
                   return (
-                  <tr key={product.id_producto || index} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                  <tr 
+                    key={product.id_producto || index} 
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                  >
                     <td className="px-6 py-5">
                       <span className="bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-lg font-mono text-[11px] font-black text-slate-500">{product.code || '-'}</span>
                     </td>
@@ -153,7 +162,8 @@ export default function InventoryPage() {
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedProduct(product);
                             setIsEditModalOpen(true);
                           }}
@@ -161,7 +171,10 @@ export default function InventoryPage() {
                         >
                           <Edit3 size={18} />
                         </button>
-                        <button className="bg-white dark:bg-white/5 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:shadow-md transition-all border border-slate-100 dark:border-white/5">
+                        <button 
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-white dark:bg-white/5 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:shadow-md transition-all border border-slate-100 dark:border-white/5"
+                        >
                           <Trash2 size={18} />
                         </button>
                       </div>
@@ -184,6 +197,12 @@ export default function InventoryPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={fetchProducts}
+        product={selectedProduct}
+      />
+
+      <ProductDetailsModal 
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
         product={selectedProduct}
       />
     </div>

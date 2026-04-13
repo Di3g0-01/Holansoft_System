@@ -120,7 +120,11 @@ export default function PurchasesPage() {
                 </tr>
               ) : (
                 filteredPurchases.map((purchase) => (
-                  <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                  <tr 
+                    key={purchase.id} 
+                    onClick={() => handleShowDetails(purchase)}
+                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                  >
                     <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{purchase.poNumber}</td>
                     <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{purchase.provider}</td>
                     <td className="px-6 py-4 text-center text-gray-500">{format(new Date(purchase.date), 'dd/MM/yyyy')}</td>
@@ -131,12 +135,9 @@ export default function PurchasesPage() {
                     </td>
                     <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">Q {Number(purchase.total).toFixed(2)}</td>
                     <td className="px-6 py-4 text-center">
-                      <button 
-                        onClick={() => handleShowDetails(purchase)}
-                        className="p-2 text-slate-400 hover:text-primary transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
-                      >
-                        <Eye size={18} />
-                      </button>
+                      <div className="flex justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                        <Eye size={18} className="text-slate-400 group-hover:text-primary transition-colors" />
+                      </div>
                     </td>
                   </tr>
                 ))

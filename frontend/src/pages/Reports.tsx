@@ -269,7 +269,18 @@ export default function ReportsPage() {
                           <tr className="bg-slate-50/20 dark:bg-white/5 animate-in slide-in-from-top-2 duration-300">
                             <td colSpan={4} className="px-8 py-6">
                               <div className="bg-white dark:bg-black/20 rounded-2xl p-6 border border-slate-100 dark:border-white/5">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">{t('reports.details.title')}: {type === 'sales' ? item.rpNumber : item.poNumber}</h4>
+                                <div className="flex justify-between items-start mb-6">
+                                  <div>
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('reports.details.title')}: {type === 'sales' ? item.rpNumber : item.poNumber}</h4>
+                                    <p className="text-lg font-black text-secondary dark:text-white">{type === 'sales' ? item.customer : item.provider}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('reports.date.title') || t('common.date')}</p>
+                                    <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                                      {format(new Date(item.date), 'PPPP p', { locale: language === 'es' ? es : enUS })}
+                                    </p>
+                                  </div>
+                                </div>
                                 <table className="w-full text-xs">
                                   <thead className="text-slate-500 font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5">
                                     <tr>

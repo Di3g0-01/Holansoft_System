@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { format } from 'date-fns';
 import AddSaleModal from '../components/sales/AddSaleModal';
-import { ShoppingCart } from 'lucide-react';
+import SaleDetailsModal from '../components/sales/SaleDetailsModal';
+import { ShoppingCart, Eye } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface SaleItem {
@@ -25,6 +26,8 @@ export default function SalesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const fetchSales = async () => {
     try {
@@ -105,7 +108,14 @@ export default function SalesPage() {
                 </tr>
               ) : (
                 filteredSales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                  <tr 
+                    key={sale.id} 
+                    onClick={() => {
+                      setSelectedSale(sale);
+                      setIsDetailsModalOpen(true);
+                    }}
+                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                  >
                     <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{sale.rpNumber}</td>
                     <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{sale.customer}</td>
                     <td className="px-6 py-4 text-center text-gray-500">{format(new Date(sale.date), 'dd/MM/yyyy HH:mm')}</td>
@@ -114,7 +124,12 @@ export default function SalesPage() {
                         {sale.items?.length || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">Q {Number(sale.total).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">
+                      <div className="flex items-center justify-end gap-3">
+                        <span>Q {Number(sale.total).toFixed(2)}</span>
+                        <Eye size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -126,6 +141,11 @@ export default function SalesPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={fetchSales}
+      />
+      <SaleDetailsModal 
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        sale={selectedSale}
       />
     </div>
   );
