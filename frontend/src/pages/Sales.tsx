@@ -1,0 +1,132 @@
+import { useEffect, useState } from 'react';
+import api from '../lib/api';
+import { format } from 'date-fns';
+import AddSaleModal from '../components/sales/AddSaleModal';
+import { ShoppingCart } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+
+interface SaleItem {
+  id: number;
+  product: any;
+}
+
+interface Sale {
+  id: number;
+  rpNumber: string;
+  customer: string;
+  date: string;
+  total: number;
+  items: SaleItem[];
+}
+
+export default function SalesPage() {
+  const { t } = useLanguage();
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const fetchSales = async () => {
+    try {
+      const res = await api.get('/sales');
+      setSales(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredSales = sales.filter(s => {
+    const term = searchTerm.toLowerCase();
+    const matchBase = s.rpNumber?.toLowerCase().includes(term) || s.customer?.toLowerCase().includes(term);
+    const matchItems = s.items?.some(item => 
+      item.product?.nombre?.toLowerCase().includes(term) ||
+      item.product?.code?.toLowerCase().includes(term) ||
+      item.product?.id_producto?.toString().includes(term) ||
+      item.product?.category?.nombre?.toLowerCase().includes(term)
+    );
+    return matchBase || matchItems;
+  });
+
+  useEffect(() => {
+    fetchSales();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('sales.title')}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sales.subtitle')}</p>
+        </div>
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-2xl font-black shadow-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] active:scale-95"
+        >
+          <ShoppingCart size={20} />
+          {t('sales.newSale')}
+        </button>
+      </div>
+
+      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 dark:border-white/5 flex gap-4">
+          <div className="relative flex-1 max-w-md">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+            <input 
+              type="text" 
+              placeholder={t('sales.searchPlaceholder')}
+              className="w-full bg-[#F8FAFC] dark:bg-black/20 border-none rounded-2xl py-4 pl-12 pr-6 font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 dark:bg-black/20 text-gray-600 dark:text-gray-400 font-medium border-b border-gray-100 dark:border-white/5">
+              <tr>
+                <th className="px-6 py-4">{t('sales.table.bill')}</th>
+                <th className="px-6 py-4">{t('sales.table.customer')}</th>
+                <th className="px-6 py-4 text-center">{t('sales.table.date')}</th>
+                <th className="px-6 py-4 text-center">{t('sales.table.items')}</th>
+                <th className="px-6 py-4 text-right">{t('common.total')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('sales.loading')}</td>
+                </tr>
+              ) : filteredSales.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('sales.noResults')}</td>
+                </tr>
+              ) : (
+                filteredSales.map((sale) => (
+                  <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                    <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{sale.rpNumber}</td>
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{sale.customer}</td>
+                    <td className="px-6 py-4 text-center text-gray-500">{format(new Date(sale.date), 'dd/MM/yyyy HH:mm')}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                        {sale.items?.length || 0}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">Q {Number(sale.total).toFixed(2)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <AddSaleModal 
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={fetchSales}
+      />
+    </div>
+  );
+}

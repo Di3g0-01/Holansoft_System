@@ -1,0 +1,29 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './filters/global-exception.filter';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  
+  // Clean up CORS for local development
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+  
+  // Set global prefix to avoid repeating 'api/' in every controller
+  app.setGlobalPrefix('api');
+  
+  // Global Resilience Layer
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+    forbidNonWhitelisted: false, // Changed to false to be more flexible with extra fields
+  }));
+
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
