@@ -9,7 +9,7 @@ type FilterMode = 'day' | 'week' | 'range';
 
 export default function ReportsPage() {
   const { t, language } = useLanguage();
-  const [filterMode, setFilterMode] = useState<FilterMode>('range');
+  const [filterMode, setFilterMode] = useState<FilterMode>('day');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reportData, setReportData] = useState<any[]>([]);
@@ -70,6 +70,11 @@ export default function ReportsPage() {
     }
   }, [type, startDate, endDate]);
 
+  // Initial fetch for 'day' mode
+  useEffect(() => {
+    applyFilter('day');
+  }, []);
+
   const filteredData = useMemo(() => {
     const term = searchTerm.toLowerCase();
     if (!term) return reportData;
@@ -98,12 +103,12 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h2 className="text-3xl font-black text-secondary dark:text-white tracking-tight">{t('reports.title')}</h2>
           <p className="text-slate-500 font-bold mt-1">{t('reports.subtitle')}</p>
         </div>
-        <button className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 px-4 py-2 rounded-xl border border-slate-200 dark:border-white/5 font-bold hover:bg-slate-200 transition-all active:scale-95">
+        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 px-4 py-3 rounded-2xl border border-slate-200 dark:border-white/5 font-bold hover:bg-slate-200 transition-all active:scale-95">
           <Download size={18} />
           {t('reports.exportPdf')}
         </button>
@@ -246,20 +251,28 @@ export default function ReportsPage() {
                           <td className="px-8 py-5">
                             <div className="flex flex-col">
                               <span className="font-bold text-secondary dark:text-white">
-                                {item.items?.map((i: any) => i.product?.nombre).join(', ') || 'N/A'}
+                                {item.items?.length > 2 
+                                  ? t('reports.table.multipleProducts') 
+                                  : item.items?.map((i: any) => i.product?.nombre).join(', ') || 'N/A'}
                               </span>
                               <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-                                {item.items?.map((i: any) => i.product?.code).join(', ') || 'N/A'}
+                                {item.items?.length > 2 
+                                  ? '' 
+                                  : item.items?.map((i: any) => i.product?.code).join(', ') || 'N/A'}
                               </span>
                             </div>
                           </td>
                           <td className="px-8 py-5">
                             <span className="font-bold text-slate-600 dark:text-slate-300">
-                              {type === 'sales' ? item.customer : item.provider}
+                              {type === 'sales' 
+                                ? (item.customer === 'common.finalConsumer' ? t('common.finalConsumer') : item.customer)
+                                : item.provider}
                             </span>
                           </td>
                           <td className="px-8 py-5 text-center">
-                            <span className="text-slate-400 font-bold text-xs">{format(new Date(item.date), 'dd MMM, yyyy', { locale: language === 'es' ? es : enUS })}</span>
+                            <span className="text-slate-400 font-bold text-xs">
+                              {format(new Date(item.date), 'dd MMM, yyyy', { locale: language === 'es' ? es : enUS })}
+                            </span>
                           </td>
                           <td className="px-8 py-5 text-right">
                             <span className="font-black text-secondary dark:text-white">Q {Number(item.total).toFixed(2)}</span>
@@ -272,7 +285,11 @@ export default function ReportsPage() {
                                 <div className="flex justify-between items-start mb-6">
                                   <div>
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('reports.details.title')}: {type === 'sales' ? item.rpNumber : item.poNumber}</h4>
-                                    <p className="text-lg font-black text-secondary dark:text-white">{type === 'sales' ? item.customer : item.provider}</p>
+                                    <p className="text-lg font-black text-secondary dark:text-white">
+                                      {type === 'sales' 
+                                        ? (item.customer === 'common.finalConsumer' ? t('common.finalConsumer') : item.customer)
+                                        : item.provider}
+                                    </p>
                                   </div>
                                   <div className="text-right">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('reports.date.title') || t('common.date')}</p>
@@ -300,6 +317,12 @@ export default function ReportsPage() {
                                       </tr>
                                     ))}
                                   </tbody>
+                                  <tfoot className="border-t-2 border-slate-200 dark:border-white/10">
+                                    <tr>
+                                      <td colSpan={3} className="py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[10px]">{t('common.total')}</td>
+                                      <td className="py-4 text-right font-black text-xl text-primary">Q {Number(item.total).toFixed(2)}</td>
+                                    </tr>
+                                  </tfoot>
                                 </table>
                               </div>
                             </td>

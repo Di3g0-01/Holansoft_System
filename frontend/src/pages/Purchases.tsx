@@ -2,29 +2,13 @@ import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { format } from 'date-fns';
 import AddPurchaseModal from '../components/purchases/AddPurchaseModal';
+import EditPurchaseModal from '../components/purchases/EditPurchaseModal';
 import PurchaseDetailsModal from '../components/purchases/PurchaseDetailsModal';
-import { ShoppingBag, Eye } from 'lucide-react';
+import { ShoppingBag, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { toast } from 'sonner';
+import type { Purchase } from '../types';
 
-interface PurchaseItem {
-  id: number;
-  cantidad: number;
-  precio: number;
-  sub_total: number;
-  product: {
-    nombre: string;
-    code: string;
-  };
-}
-
-interface Purchase {
-  id: number;
-  poNumber: string;
-  provider: string;
-  date: string;
-  total: number;
-  items: PurchaseItem[];
-}
 
 export default function PurchasesPage() {
   const { t } = useLanguage();
@@ -32,6 +16,7 @@ export default function PurchasesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -46,6 +31,17 @@ export default function PurchasesPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(t('purchases.confirmDelete') || '¿Está seguro de eliminar este registro?')) return;
+    try {
+      await api.delete(`/purchases/${id}`);
+      toast.success(t('users.messages.successDelete') || 'Eliminado con éxito');
+      fetchPurchases();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Error al eliminar');
+    }
+  };
+
   const filteredPurchases = purchases.filter(p => {
     const term = searchTerm.toLowerCase();
     const matchBase = p.poNumber?.toLowerCase().includes(term) || p.provider?.toLowerCase().includes(term);
@@ -55,6 +51,7 @@ export default function PurchasesPage() {
       item.product?.id_producto?.toString().includes(term) ||
       item.product?.category?.nombre?.toLowerCase().includes(term)
     );
+
     return matchBase || matchItems;
   });
 
@@ -112,11 +109,11 @@ export default function PurchasesPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('purchases.loading')}</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">{t('purchases.loading')}</td>
                 </tr>
               ) : filteredPurchases.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('purchases.noResults')}</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">{t('purchases.noResults')}</td>
                 </tr>
               ) : (
                 filteredPurchases.map((purchase) => (
@@ -126,18 +123,49 @@ export default function PurchasesPage() {
                     className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                   >
                     <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{purchase.poNumber}</td>
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{purchase.provider}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-gray-700 dark:text-gray-300 font-bold">{purchase.provider}</span>
+                        <span className="text-[10px] text-gray-400 font-medium italic">
+                          {purchase.items?.length > 2 
+                            ? t('reports.table.multipleProducts') 
+                            : purchase.items?.map((i: any) => i.product?.nombre).join(', ')}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-center text-gray-500">{format(new Date(purchase.date), 'dd/MM/yyyy')}</td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                         {purchase.items?.length || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">Q {Number(purchase.total).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex justify-center opacity-40 group-hover:opacity-100 transition-opacity">
-                        <Eye size={18} className="text-slate-400 group-hover:text-primary transition-colors" />
-                      </div>
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">
+                      Q {Number(purchase.total).toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-2">
+                          <button 
+                            onClick={() => handleShowDetails(purchase)}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setSelectedPurchase(purchase);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-orange-500/10 text-slate-400 hover:text-orange-500 rounded-lg transition-all"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(purchase.id)}
+                            className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-lg transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                     </td>
                   </tr>
                 ))
@@ -150,6 +178,12 @@ export default function PurchasesPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={fetchPurchases}
+      />
+      <EditPurchaseModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={fetchPurchases}
+        purchase={selectedPurchase}
       />
       <PurchaseDetailsModal 
         isOpen={isDetailsModalOpen}

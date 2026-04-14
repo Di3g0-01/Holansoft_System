@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, ShoppingCart, Trash2, Plus, Minus, Info, Check } from 'lucide-react';
-import type { Product } from '../../types';
-
+import type { Product, Sale, SaleItem } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';
 
-interface AddSaleModalProps {
+interface EditSaleModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  sale: Sale | null;
 }
-
 
 interface CartItem {
   productId: number;
   name: string;
   quantity: number;
   price: number;
-  stock: number;
+  stock: number; // current stock in DB
   precio_unidad: number;
   precio_docena: number;
   precio_mayoreo: number;
 }
 
-export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModalProps) {
+export default function EditSaleModal({ isOpen, onClose, onSuccess, sale }: EditSaleModalProps) {
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -32,6 +31,23 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
   const [customer, setCustomer] = useState('');
   const [loading, setLoading] = useState(false);
   const [showConversion, setShowConversion] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen && sale) {
+      setCustomer(sale.customer);
+      const initialCart: CartItem[] = sale.items.map((item: SaleItem) => ({
+        productId: item.product.id_producto,
+        name: item.product.nombre,
+        quantity: item.cantidad,
+        price: item.precio,
+        stock: item.product.cantidad, 
+        precio_unidad: item.product.precio_unidad,
+        precio_docena: item.product.precio_docena,
+        precio_mayoreo: item.product.precio_mayoreo
+      }));
+      setCart(initialCart);
+    }
+  }, [isOpen, sale]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -54,21 +70,12 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
     }
   };
 
-
   const addToCart = (product: Product) => {
     const existing = cart.find((item: CartItem) => item.productId === product.id_producto);
     if (existing) {
-      if (existing.quantity + 1 > product.cantidad) {
-        toast.error(t('inventory.form.savingError')); // We should add a generic stock error
-        return;
-      }
       const newQty = existing.quantity + 1;
       updateQuantity(product.id_producto, newQty);
     } else {
-      if (product.cantidad < 1) {
-        toast.error(t('common.status.outOfStock'));
-        return;
-      }
       const newItem: CartItem = {
         productId: product.id_producto,
         name: product.nombre,
@@ -81,7 +88,6 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
       };
       setCart([...cart, newItem]);
     }
-    // No longer clearing search term to allow quick multi-add
   };
 
   const updateQuantity = (productId: number, newQty: number) => {
@@ -89,11 +95,6 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
     
     setCart((prev: CartItem[]) => prev.map((item: CartItem) => {
       if (item.productId === productId) {
-        if (newQty > item.stock && newQty > 0) {
-          toast.error('Stock insuficiente');
-          return item;
-        }
-
         // Automatic Pricing Engine
         let price = item.precio_unidad;
         if (newQty >= 50) price = item.precio_mayoreo;
@@ -115,23 +116,16 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!sale) return;
     if (cart.length === 0) {
       toast.error(t('sales.emptyCart'));
       return;
     }
     
-    // Check for invalid quantities
-    if (cart.some((item: CartItem) => item.quantity <= 0)) {
-      toast.error(t('sales.invalidQuantity') || 'Invalid quantity');
-      return;
-    }
-
     setLoading(true);
     try {
       const payload = {
-        rpNumber: `V-${Date.now().toString().slice(-6)}`,
         customer: customer || t('common.finalConsumer') || 'Consumidor Final',
-        date: new Date().toISOString(),
         items: cart.map((item: CartItem) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -139,12 +133,10 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
         }))
       };
 
-      await api.post('/sales', payload);
-      toast.success(t('sales.success') || 'Sale completed!');
+      await api.patch(`/sales/${sale.id}`, payload);
+      toast.success(t('inventory.form.success') || 'Sale updated!');
       onSuccess();
       onClose();
-      setCart([]);
-      setCustomer('');
     } catch (err: any) {
       const msg = err.response?.data?.message || t('sales.error');
       toast.error(msg);
@@ -161,16 +153,16 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
     return (
       <div className="bg-secondary p-4 rounded-2xl text-white text-xs space-y-2 animate-in fade-in zoom-in duration-200">
         <div className="flex justify-between border-b border-white/10 pb-1">
-          <span>{t('sales.unitsTotal') || 'Unidades totales'}:</span>
+          <span>Unidades totales:</span>
           <span className="font-black">{qty}</span>
         </div>
         <div className="flex justify-between border-b border-white/10 pb-1">
-          <span>{t('sales.equivalentTo') || 'Equivale a'}:</span>
-          <span className="font-black">{dozens} {t('inventory.form.dozen') || 'docenas'}</span>
+          <span>Equivale a:</span>
+          <span className="font-black">{dozens} docenas</span>
         </div>
         <div className="flex justify-between">
-          <span>{t('inventory.form.wholesale') || 'Mayoreo'} (50s):</span>
-          <span className="font-black">{wholesale} {t('sales.lots') || 'lote(s)'} + {remainingForWholesale}</span>
+          <span>Mayoreo (50s):</span>
+          <span className="font-black">{wholesale} lote(s) + {remainingForWholesale}</span>
         </div>
       </div>
     );
@@ -184,14 +176,14 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
       
       <div className="relative bg-[#F8FAFC] dark:bg-surface-dark w-full max-w-5xl h-[95vh] sm:h-[90vh] rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 transition-all">
         {/* Header */}
-        <div className="bg-[#003366] p-4 sm:p-8 text-white flex items-center justify-between shrink-0">
+        <div className="bg-[#AA5500] p-4 sm:p-8 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl">
               <ShoppingCart size={24} className="sm:w-8 sm:h-8" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('common.sales')}</h3>
-              <p className="text-white/60 text-[10px] sm:text-sm font-bold">{t('sales.newSaleSubtitle')}</p>
+              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('sales.edit') || 'Editar Venta'}</h3>
+              <p className="text-white/60 text-[10px] sm:text-sm font-bold">{sale?.rpNumber}</p>
             </div>
           </div>
           <button onClick={onClose} className="hover:bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all">
@@ -233,13 +225,6 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
                         <div className="flex gap-4 mt-2">
                           <div className="text-[10px] font-bold text-slate-400">
                             {t('sales.unitPriceShort')}: <span className="text-secondary dark:text-white">Q{product.precio_unidad}</span>
-                          </div>
-
-                          <div className="text-[10px] font-bold text-slate-400">
-                            {t('inventory.form.dozen')}: <span className="text-secondary dark:text-white">Q{product.precio_docena}</span>
-                          </div>
-                          <div className="text-[10px] font-bold text-slate-400">
-                            {t('inventory.form.wholesale')}: <span className="text-secondary dark:text-white">Q{product.precio_mayoreo}</span>
                           </div>
                         </div>
                       </div>
@@ -344,7 +329,7 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
             </div>
 
             {/* Grand Total Area */}
-            <div className="bg-primary p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] text-white shadow-xl shadow-primary/20 shrink-0 mt-auto">
+            <div className="bg-[#AA5500] p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] text-white shadow-xl shadow-primary/20 shrink-0 mt-auto">
               <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <span className="text-xs font-black uppercase tracking-widest opacity-60">{t('sales.totalToPay')}</span>
                 <span className="text-2xl sm:text-4xl font-black tracking-tighter">Q {calculateTotal().toFixed(2)}</span>
@@ -352,14 +337,14 @@ export default function AddSaleModal({ isOpen, onClose, onSuccess }: AddSaleModa
               <button 
                 disabled={loading || cart.length === 0}
                 onClick={handleSubmit}
-                className="w-full bg-white text-primary hover:bg-[#F0F0F0] active:scale-95 disabled:opacity-50 disabled:active:scale-100 py-4 sm:py-6 rounded-2xl font-black text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg transition-all"
+                className="w-full bg-white text-[#AA5500] hover:bg-[#F0F0F0] active:scale-95 disabled:opacity-50 disabled:active:scale-100 py-4 sm:py-6 rounded-2xl font-black text-lg sm:text-xl flex items-center justify-center gap-3 shadow-lg transition-all"
               >
                 {loading ? (
                   t('sales.processing')
                 ) : (
                   <>
                     <Check size={20} className="sm:w-7 sm:h-7" />
-                    {t('sales.finishSale')}
+                    {t('common.saveChanges') || 'Guardar Cambios'}
                   </>
                 )}
               </button>

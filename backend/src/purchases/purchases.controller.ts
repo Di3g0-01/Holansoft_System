@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Delete, Param, UseGuards } from '@nestjs/common';
 import { PurchasesService } from './purchases.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -15,5 +15,15 @@ export class PurchasesController {
   @Post()
   create(@Body() createDto: any) {
     return this.purchasesService.create(createDto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateDto: any) {
+    return this.purchasesService.update(+id, updateDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.purchasesService.remove(+id);
   }
 }

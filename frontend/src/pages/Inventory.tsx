@@ -4,20 +4,9 @@ import { useLanguage } from '../contexts/LanguageContext';
 import AddProductModal from '../components/inventory/AddProductModal';
 import EditProductModal from '../components/inventory/EditProductModal';
 import ProductDetailsModal from '../components/inventory/ProductDetailsModal';
-import { Package, Plus, Search, Edit3, Trash2, Eye } from 'lucide-react';
+import { Package, Plus, Search, Edit3, Trash2 } from 'lucide-react';
+import type { Product } from '../types';
 
-interface Product {
-  id_producto: number;
-  code: string;
-  nombre: string;
-  marca?: string;
-  tamano?: string;
-  tipo?: string;
-  precio_unidad: number;
-  cantidad: number;
-  alerta_cantidad: number;
-  category: { name: string } | null;
-}
 
 export default function InventoryPage() {
   const { t } = useLanguage();

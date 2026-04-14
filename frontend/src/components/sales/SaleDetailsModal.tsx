@@ -1,26 +1,9 @@
 import { X, ShoppingCart, DollarSign, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-interface SaleItem {
-  id: number;
-  cantidad: number;
-  precio: number;
-  sub_total: number;
-  product: {
-    nombre: string;
-    code: string;
-  };
-}
-
-interface Sale {
-  id: number;
-  rpNumber: string;
-  customer: string;
-  date: string;
-  total: number;
-  items: SaleItem[];
-}
+import type { Sale } from '../../types';
 
 interface SaleDetailsModalProps {
   isOpen: boolean;
@@ -28,8 +11,9 @@ interface SaleDetailsModalProps {
   sale: Sale | null;
 }
 
+
 export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsModalProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (!isOpen || !sale) return null;
 
   return (
@@ -44,7 +28,7 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
               <ShoppingCart size={24} />
             </div>
             <div>
-              <h3 className="text-2xl font-black">{t('sales.details.title') || 'Detalle de Venta'}</h3>
+              <h3 className="text-2xl font-black">{t('sales.details.title')}</h3>
               <p className="text-white/60 font-bold text-sm uppercase tracking-widest">{sale.rpNumber}</p>
             </div>
           </div>
@@ -60,20 +44,22 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
               <div className="bg-primary/10 p-3 rounded-2xl text-primary"><User size={20} /></div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('sales.table.customer')}</p>
-                <p className="text-xl font-black text-secondary dark:text-white">{sale.customer}</p>
+                <p className="text-xl font-black text-secondary dark:text-white">
+                  {sale.customer === 'common.finalConsumer' ? t('common.finalConsumer') : sale.customer}
+                </p>
               </div>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-3xl">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('sales.table.date')}</p>
               <p className="text-xl font-black text-secondary dark:text-white">
-                {format(new Date(sale.date), 'PPPP')}
+                {format(new Date(sale.date), 'PPPP', { locale: language === 'es' ? es : enUS })}
               </p>
             </div>
           </div>
 
           {/* Items Table */}
           <div className="space-y-4">
-            <h4 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">{t('sales.details.products') || 'Productos Vendidos'}</h4>
+            <h4 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">{t('sales.details.products')}</h4>
             <div className="bg-slate-50 dark:bg-white/5 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-white/5">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-100 dark:bg-black/20 text-slate-500 font-black uppercase tracking-widest text-[10px]">

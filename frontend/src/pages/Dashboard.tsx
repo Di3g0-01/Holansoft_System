@@ -12,6 +12,8 @@ import {
   History as HistoryIcon,
   ShoppingBag
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import DashboardCharts from '../components/dashboard/DashboardCharts';
 
 interface DashboardStats {
@@ -36,7 +38,7 @@ interface ActivityInfo {
 }
 
 export default function DashboardPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     products: 0,
@@ -122,7 +124,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
         <div 
           onClick={() => navigate('/inventory')}
           className="relative group overflow-hidden cursor-pointer"
@@ -204,7 +206,7 @@ export default function DashboardPage() {
         <DashboardCharts />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 pb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 pb-10">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full translate-x-10 translate-y-[-10px] group-hover:scale-150 transition-transform duration-700"></div>
               <div className="flex items-center justify-between mb-8">
@@ -221,7 +223,9 @@ export default function DashboardPage() {
                             <p className="text-md font-bold text-secondary">
                               {(activity as any).type === 'purchase' ? t('dashboard.activity.purchase') : t('dashboard.activity.sale')} #{activity.id}
                             </p>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{new Date(activity.createdAt).toLocaleTimeString()}</p>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                              {format(new Date(activity.createdAt), 'p', { locale: language === 'es' ? es : enUS })}
+                            </p>
                         </div>
                         <span className={`font-black text-lg ${(activity as any).type === 'purchase' ? 'text-purple-600' : 'text-green-600'}`}>
                           Q {Number(activity.total).toFixed(2)}
@@ -236,21 +240,26 @@ export default function DashboardPage() {
               </div>
           </div>
 
-          <div className="bg-gradient-to-br from-secondary to-secondary-light rounded-[2.5rem] p-10 shadow-secondary text-white flex flex-col justify-between group relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[#003366] to-[#004488] rounded-[2.5rem] p-10 shadow-secondary text-white flex flex-col justify-between group relative overflow-hidden">
               <div className="absolute top-[-20%] left-[-10%] w-64 h-64 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all duration-700"></div>
               <div className="relative">
-                  <h4 className="text-3xl font-black mb-2 tracking-tight">{t('dashboard.systemStatus.title')}</h4>
-                  <p className="text-white/60 font-black uppercase tracking-[0.3em] text-[10px]">{t('dashboard.systemStatus.subtitle')}</p>
+                  <h4 className="text-3xl font-black mb-2 tracking-tight">{t('dashboard.utility.title') || 'Rendimiento'}</h4>
+                  <p className="text-white/60 font-black uppercase tracking-[0.3em] text-[10px]">{t('dashboard.utility.subtitle') || 'Balance de Ingresos vs Gastos'}</p>
               </div>
               <div className="flex items-end justify-between mt-16 relative">
-                  <div className="flex gap-2 items-end">
-                      {[3, 5, 4, 8, 5, 9, 6, 12, 10, 14].map((h, i) => (
-                          <div key={i} className={`w-3 bg-white/20 rounded-full group-hover:bg-primary transition-all duration-500 delay-${i*50}`} style={{ height: `${h * 4}px` }}></div>
-                      ))}
+                  <div className="text-left">
+                      <p className="text-5xl font-black mb-1">
+                        {stats.recentSales > 0 
+                          ? Math.round(((stats.recentSales - stats.recentPurchases) / stats.recentSales) * 100) 
+                          : 0}
+                        <span className="text-primary">%</span>
+                      </p>
+                      <p className="text-[10px] font-black text-white/40 tracking-[0.2em]">{t('dashboard.utility.label') || 'MARGEN DE UTILIDAD'}</p>
                   </div>
-                  <div className="text-right">
-                      <p className="text-5xl font-black mb-1">99.9<span className="text-primary">%</span></p>
-                      <p className="text-[10px] font-black text-white/40 tracking-[0.2em]">{t('dashboard.systemStatus.label')}</p>
+                  <div className="flex gap-2 items-end">
+                      {[3, 8, 4, 12, 5, 9, 8, 14, 10, 18].map((h, i) => (
+                          <div key={i} className={`w-3 bg-white/20 rounded-full group-hover:bg-primary transition-all duration-500 delay-${i*50}`} style={{ height: `${h * 3}px` }}></div>
+                      ))}
                   </div>
               </div>
           </div>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, ShoppingBag, Trash2, Plus, Minus, Info, Check, Save, DollarSign } from 'lucide-react';
+import { X, Search, ShoppingBag, Trash2, Plus, Minus, Check, Save, DollarSign } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';
+import type { Product, Category } from '../../types';
 
 interface AddPurchaseModalProps {
   isOpen: boolean;
@@ -10,24 +11,21 @@ interface AddPurchaseModalProps {
   onSuccess: () => void;
 }
 
-interface Product {
-  id_producto: number;
-  code: string;
-  nombre: string;
-  cantidad: number;
-}
-
 interface NewProductForm {
   code: string;
   nombre: string;
-  id_categoria: string;
-  precio_unidad: string | number;
-  precio_docena: string | number;
-  precio_mayoreo: string | number;
-  alerta_cantidad: string | number;
+  brand: string;
+  size: string;
+  type: string;
+  categoryId: string;
+  priceUnit: string | number;
+  priceDozen: string | number;
+  priceWholesale: string | number;
+  alertQuantity: string | number;
 }
 
-interface PurchaseItem {
+
+interface PurchaseCartItem {
   productId: number;
   name: string;
   quantity: number;
@@ -40,27 +38,27 @@ interface PurchaseItem {
 
 export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurchaseModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [cart, setCart] = useState<PurchaseItem[]>([]);
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [cart, setCart] = useState<PurchaseCartItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [orderNumber, setOrderNumber] = useState(`C-${Date.now().toString().slice(-6)}`);
+  const [orderNumber] = useState(`C-${Date.now().toString().slice(-6)}`);
   const [provider, setProvider] = useState('');
   const { t } = useLanguage();
-  const [showConversion, setShowConversion] = useState<number | null>(null);
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+
   const [newProduct, setNewProduct] = useState<NewProductForm>({
     code: '',
     nombre: '',
-    marca: '',
-    tamano: '',
-    tipo: '',
-    id_categoria: '',
-    precio_unidad: '',
-    precio_docena: '',
-    precio_mayoreo: '',
-    alerta_cantidad: '5'
+    brand: '',
+    size: '',
+    type: '',
+    categoryId: '',
+    priceUnit: '',
+    priceDozen: '',
+    priceWholesale: '',
+    alertQuantity: '5'
   });
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -91,16 +89,20 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     e.preventDefault();
     try {
       const res = await api.post('/products', {
-        ...newProduct,
-        id_categoria: newProduct.id_categoria ? Number(newProduct.id_categoria) : null,
-        precio_unidad: Number(newProduct.precio_unidad),
-        precio_docena: Number(newProduct.precio_docena),
-        precio_mayoreo: Number(newProduct.precio_mayoreo),
+        code: newProduct.code,
+        nombre: newProduct.nombre,
+        marca: newProduct.brand,
+        tamano: newProduct.size,
+        tipo: newProduct.type,
+        categoryId: newProduct.categoryId ? Number(newProduct.categoryId) : null,
+        precio_unidad: Number(newProduct.priceUnit),
+        precio_docena: Number(newProduct.priceDozen),
+        precio_mayoreo: Number(newProduct.priceWholesale),
         cantidad: 0 // Initial stock is 0, will be updated by the purchase
       });
       addToCart(res.data);
       setIsQuickCreateOpen(false);
-      setNewProduct({ code: '', nombre: '', marca: '', tamano: '', tipo: '', id_categoria: '', precio_unidad: '', precio_docena: '', precio_mayoreo: '', alerta_cantidad: '5' });
+      setNewProduct({ code: '', nombre: '', brand: '', size: '', type: '', categoryId: '', priceUnit: '', priceDozen: '', priceWholesale: '', alertQuantity: '5' });
       toast.success(t('inventory.form.success') || 'Producto creado y agregado a la compra');
     } catch (err) {
       toast.error(t('inventory.form.savingError') || 'Error al crear el producto');
@@ -121,15 +123,15 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     if (existing) {
       updateQuantity(product.id_producto, existing.quantity + 1);
       } else {
-      const newItem: PurchaseItem = {
+      const newItem: PurchaseCartItem = {
         productId: product.id_producto,
         name: product.nombre,
         quantity: 1,
         cost: 0,
-        stock: (product as any).cantidad || 0,
-        precio_unidad: (product as any).precio_unidad || 0,
-        precio_docena: (product as any).precio_docena || 0,
-        precio_mayoreo: (product as any).precio_mayoreo || 0,
+        stock: product.cantidad || 0,
+        precio_unidad: product.precio_unidad || 0,
+        precio_docena: product.precio_docena || 0,
+        precio_mayoreo: product.precio_mayoreo || 0,
       };
       setCart([...cart, newItem]);
     }
@@ -139,23 +141,23 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
   const updateQuantity = (productId: number, newQty: number) => {
     if (newQty < 0) return;
-    setCart(cart.map(item => item.productId === productId ? { ...item, quantity: newQty } : item));
+    setCart(cart.map((item: PurchaseCartItem) => item.productId === productId ? { ...item, quantity: newQty } : item));
   };
 
   const updateCost = (productId: number, cost: number) => {
-    setCart(cart.map(item => item.productId === productId ? { ...item, cost } : item));
+    setCart(cart.map((item: PurchaseCartItem) => item.productId === productId ? { ...item, cost } : item));
   };
 
   const updatePriceField = (productId: number, field: string, value: number) => {
-    setCart(cart.map(item => item.productId === productId ? { ...item, [field]: value } : item));
+    setCart(cart.map((item: PurchaseCartItem) => item.productId === productId ? { ...item, [field]: value } : item));
   };
 
   const removeFromCart = (productId: number) => {
-    setCart(cart.filter(item => item.productId !== productId));
+    setCart(cart.filter((item: PurchaseCartItem) => item.productId !== productId));
   };
 
   const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + (item.quantity * item.cost), 0);
+    return cart.reduce((sum: number, item: PurchaseCartItem) => sum + (item.quantity * item.cost), 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,7 +170,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       toast.error(t('purchases.providerError') || 'Escriba el nombre del proveedor');
       return;
     }
-    if (cart.some(item => item.quantity < 1)) {
+    if (cart.some((item: PurchaseCartItem) => item.quantity < 1)) {
       toast.error(t('purchases.invalidQuantity') || 'La cantidad no puede estar vacía o ser 0 en ninguno de los productos');
       return;
     }
@@ -179,7 +181,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
         poNumber: orderNumber,
         provider: provider,
         date: new Date().toISOString(),
-        items: cart.map(item => ({
+        items: cart.map((item: PurchaseCartItem) => ({
           productId: item.productId,
           quantity: item.quantity,
           cost: Number(item.cost),
@@ -229,26 +231,26 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-secondary/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative bg-[#F3F4F6] dark:bg-surface-dark w-full max-w-5xl h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="relative bg-[#F3F4F6] dark:bg-surface-dark w-full max-w-5xl h-[95vh] sm:h-[90vh] rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 transition-all">
         {/* Header */}
-        <div className="bg-[#1e293b] p-8 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/10 p-3 rounded-2xl">
-              <ShoppingBag size={32} />
+        <div className="bg-[#1e293b] p-4 sm:p-8 text-white flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl">
+              <ShoppingBag size={24} className="sm:w-8 sm:h-8" />
             </div>
             <div>
-              <h3 className="text-3xl font-black tracking-tight">{t('purchases.title')}</h3>
-              <p className="text-white/60 text-sm font-bold">{t('purchases.newPurchaseSubtitle')}</p>
+              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('purchases.title')}</h3>
+              <p className="text-white/60 text-[10px] sm:text-sm font-bold">{t('purchases.newPurchaseSubtitle')}</p>
             </div>
           </div>
-          <button onClick={onClose} className="hover:bg-white/10 p-3 rounded-2xl transition-all">
-            <X size={32} />
+          <button onClick={onClose} className="hover:bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all">
+            <X size={24} className="sm:w-8 sm:h-8" />
           </button>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Left Side: Search */}
-          <div className="w-1/2 p-8 border-r border-gray-200 dark:border-white/5 flex flex-col gap-6 overflow-y-auto">
+          <div className="w-full lg:w-1/2 p-4 sm:p-8 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-white/5 flex flex-col gap-4 sm:gap-6 overflow-y-auto max-h-[40vh] lg:max-h-full">
             <div className="space-y-3">
               <label className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] ml-2">{t('purchases.searchProductTitle')}</label>
               <div className="relative">
@@ -267,7 +269,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
             {/* Results or Quick Create */}
             <div className="grid grid-cols-1 gap-4">
               {searchResults.length > 0 ? (
-                searchResults.map(product => (
+                searchResults.map((product: Product) => (
                   <div 
                     key={product.id_producto}
                     className="bg-white dark:bg-white/5 p-6 rounded-[2rem] border border-transparent hover:border-blue-500/30 hover:shadow-xl transition-all cursor-pointer group relative"
@@ -280,7 +282,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                       </div>
                       <div className="text-right">
                         <div className="px-4 py-1 rounded-full text-[10px] font-black uppercase bg-slate-100 text-slate-500">
-                          Stock: {product.cantidad}
+                          {t('common.stock')}: {product.cantidad}
                         </div>
                       </div>
                     </div>
@@ -318,8 +320,8 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                     </button>
                   </div>
 
-                  <form onSubmit={handleQuickCreate} className="p-8 space-y-6">
-                    <div className="grid grid-cols-2 gap-6">
+                  <form onSubmit={handleQuickCreate} className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.code')}</label>
                         <input required type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.code} onChange={e => setNewProduct({...newProduct, code: e.target.value})} />
@@ -330,34 +332,34 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.brand') || 'Marca'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.marca} onChange={e => setNewProduct({...newProduct, marca: e.target.value})} />
+                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.brand} onChange={e => setNewProduct({...newProduct, brand: e.target.value})} />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.size') || 'Tamaño'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.tamano} onChange={e => setNewProduct({...newProduct, tamano: e.target.value})} />
+                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.type') || 'Tipo'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.tipo} onChange={e => setNewProduct({...newProduct, tipo: e.target.value})} />
+                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.category')}</label>
-                        <select required className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.id_categoria} onChange={e => setNewProduct({...newProduct, id_categoria: e.target.value})}>
+                        <select required className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.categoryId} onChange={e => setNewProduct({...newProduct, categoryId: e.target.value})}>
                           <option value="">{t('inventory.form.selectCategory')}</option>
-                          {categories.map(cat => (
-                            <option key={cat.id_categoria || cat.id} value={cat.id_categoria || cat.id}>{cat.nombre || cat.name}</option>
+                          {categories.map((cat: Category) => (
+                            <option key={cat.id} value={cat.id}>{cat.nombre || cat.name}</option>
                           ))}
                         </select>
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('purchases.stockAlert')}</label>
-                        <input required type="number" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.alerta_cantidad} onChange={e => setNewProduct({...newProduct, alerta_cantidad: e.target.value})} />
+                        <input required type="number" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.alertQuantity} onChange={e => setNewProduct({...newProduct, alertQuantity: e.target.value})} />
                       </div>
                     </div>
 
@@ -366,18 +368,19 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                         <Check size={16} />
                         <span className="text-[10px] font-black uppercase tracking-widest">{t('purchases.priceSchema')}</span>
                       </div>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="space-y-1">
                           <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('purchases.unitary')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.precio_unitario} onChange={e => setNewProduct({...newProduct, precio_unidad: e.target.value})} />
+                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceUnit} onChange={e => setNewProduct({...newProduct, priceUnit: e.target.value})} />
+
                         </div>
                         <div className="space-y-1">
                           <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.dozen')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.precio_docena} onChange={e => setNewProduct({...newProduct, precio_docena: e.target.value})} />
+                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceDozen} onChange={e => setNewProduct({...newProduct, priceDozen: e.target.value})} />
                         </div>
                         <div className="space-y-1">
                           <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.wholesale')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.precio_mayoreo} onChange={e => setNewProduct({...newProduct, precio_mayoreo: e.target.value})} />
+                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceWholesale} onChange={e => setNewProduct({...newProduct, priceWholesale: e.target.value})} />
                         </div>
                       </div>
                     </div>
@@ -393,7 +396,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
           </div>
 
           {/* Right Side: Cart */}
-          <div className="flex-1 bg-white dark:bg-black/5 p-8 flex flex-col gap-6">
+          <div className="flex-1 bg-white dark:bg-black/5 p-4 sm:p-8 flex flex-col gap-4 sm:gap-6 overflow-hidden">
             <div className="space-y-3 shrink-0">
               <label className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] ml-2">{t('purchases.providerLabel')}</label>
               <input 
@@ -407,13 +410,13 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               {cart.length > 0 ? (
-                cart.map(item => (
+                cart.map((item: any) => (
                   <div key={item.productId} className="bg-white dark:bg-white/5 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex flex-col gap-4">
                     <div className="flex justify-between items-center">
                       <h5 className="font-black text-secondary dark:text-white text-lg">{item.name}</h5>
                       <button onClick={() => removeFromCart(item.productId)} className="text-slate-300 hover:text-red-500"><Trash2 size={20} /></button>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.unitCost')}</label>
                         <input 
@@ -448,7 +451,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                     {/* Selling Prices Updates */}
                     <div className="bg-slate-50 dark:bg-black/10 p-4 rounded-2xl space-y-3">
                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.updateSellingPrices')}</p>
-                       <div className="grid grid-cols-3 gap-3">
+                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="space-y-1">
                             <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <DollarSign size={10} /></label>
                             <input 
@@ -504,17 +507,17 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
               )}
             </div>
 
-            <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl shrink-0">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-sm font-black uppercase tracking-widest opacity-60">{t('common.total')}</span>
-                <span className="text-4xl font-black">Q {calculateTotal().toFixed(2)}</span>
+            <div className="bg-slate-900 p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] text-white shadow-xl shrink-0 mt-auto">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <span className="text-xs font-black uppercase tracking-widest opacity-60">{t('common.total')}</span>
+                <span className="text-2xl sm:text-4xl font-black">Q {calculateTotal().toFixed(2)}</span>
               </div>
               <button 
                 disabled={loading || cart.length === 0}
                 onClick={handleSubmit}
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 py-6 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all"
+                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 py-4 sm:py-6 rounded-2xl font-black text-lg sm:text-xl flex items-center justify-center gap-3 transition-all"
               >
-                {loading ? t('common.loading') : <><Save size={28} /> {t('purchases.confirmPurchase')}</>}
+                {loading ? t('common.loading') : <><Save size={24} className="sm:w-7 sm:h-7" /> {t('purchases.confirmPurchase')}</>}
               </button>
             </div>
           </div>

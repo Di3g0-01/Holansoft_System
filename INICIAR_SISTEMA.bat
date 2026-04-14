@@ -46,16 +46,26 @@ start "Backend Holansoft" cmd /k "cd backend && npm run start:dev"
 echo [+] Iniciando Frontend (Vite)...
 start "Frontend Holansoft" cmd /k "cd frontend && npm run dev"
 
-:: 6. Abrir Navegador
+:: 6. Espera Dinámica por el Backend
 echo.
-echo [+] Los servicios se estan iniciando en ventanas separadas.
-echo [+] Esperando 5 segundos para que los servidores esten listos...
-timeout /t 5 /nobreak > nul
+echo [+] Esperando a que el Backend este listo en el puerto 3000...
+echo     (Esto puede tardar unos segundos la primera vez)
+echo.
 
+:WAIT_BACKEND
+powershell -Command "$check = (Test-NetConnection localhost -Port 3000 -WarningAction SilentlyContinue).TcpTestSucceeded; if (!$check) { exit 1 } else { exit 0 }"
+if %errorlevel% neq 0 (
+    echo [.] El servidor aun no responde, reintentando...
+    timeout /t 3 /nobreak > nul
+    goto WAIT_BACKEND
+)
+
+echo.
+echo [+] ¡Servidor Backend detectado!
 echo [+] Abriendo el sistema en el navegador: http://localhost:5173
+echo.
 start "" "http://localhost:5173"
 
-echo.
 echo ========================================================
 echo            SISTEMA INICIADO EXITOSAMENTE
 echo ========================================================
@@ -64,3 +74,4 @@ echo [INFO] Puedes cerrar esta ventana.
 echo [INFO] NO cierres las ventanas de terminal que se abrieron.
 echo.
 pause
+

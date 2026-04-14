@@ -12,9 +12,8 @@ export class ReportsService {
   ) {}
 
   async getSales(startDate: string, endDate: string) {
-    // Force UTC boundaries by appending time strings
-    const start = new Date(`${startDate}T00:00:00.000Z`);
-    const end = new Date(`${endDate}T23:59:59.999Z`);
+    const start = this.parseDate(startDate, 'start');
+    const end = this.parseDate(endDate, 'end');
 
     return this.salesRepository.find({
       where: { date: Between(start, end) },
@@ -23,12 +22,25 @@ export class ReportsService {
   }
 
   async getPurchases(startDate: string, endDate: string) {
-    const start = new Date(`${startDate}T00:00:00.000Z`);
-    const end = new Date(`${endDate}T23:59:59.999Z`);
+    const start = this.parseDate(startDate, 'start');
+    const end = this.parseDate(endDate, 'end');
 
     return this.purchasesRepository.find({
       where: { date: Between(start, end) },
       relations: ['items', 'items.product', 'items.product.category']
     });
+  }
+
+  private parseDate(dateStr: string, type: 'start' | 'end'): Date {
+    const suffix = type === 'start' ? 'T00:00:00.000Z' : 'T23:59:59.999Z';
+    const date = new Date(`${dateStr}${suffix}`);
+    
+    if (isNaN(date.getTime())) {
+      const fallback = new Date();
+      if (type === 'start') fallback.setUTCHours(0, 0, 0, 0);
+      else fallback.setUTCHours(23, 59, 59, 999);
+      return fallback;
+    }
+    return date;
   }
 }

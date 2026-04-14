@@ -69,4 +69,104 @@ export class SalesService {
       await queryRunner.release();
     }
   }
+
+  async update(id: number, updateDto: { customer: string; items: { productId: number; quantity: number; price: number }[] }) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sale = await queryRunner.manager.findOne(Sale, {
+        where: { id },
+        relations: ['items']
+      });
+      if (!sale) throw new BadRequestException(`Venta con ID ${id} no encontrada.`);
+
+      // 1. Restore old stock
+      for (const item of sale.items) {
+        const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
+        if (product) {
+          product.cantidad = Number(product.cantidad) + Number(item.cantidad);
+          await queryRunner.manager.save(product);
+        }
+      }
+
+      // 2. Clear old items
+      await queryRunner.manager.delete(SaleItem, { id_venta: id });
+
+      // 3. Process new items and calculate total
+      let newTotal = 0;
+      for (const newItem of updateDto.items) {
+        newTotal += newItem.quantity * newItem.price;
+
+        const product = await queryRunner.manager.findOne(Product, {
+          where: { id_producto: newItem.productId }
+        });
+        if (!product) throw new BadRequestException(`Producto con ID ${newItem.productId} no existe.`);
+
+        if (product.cantidad < newItem.quantity) {
+          throw new BadRequestException(`Stock insuficiente para el producto ${product.nombre}. Stock actual: ${product.cantidad}`);
+        }
+
+        // Decrement quantity (stock)
+        product.cantidad = Number(product.cantidad) - Number(newItem.quantity);
+        await queryRunner.manager.save(product);
+
+        const saleItem = queryRunner.manager.create(SaleItem, {
+          id_venta: id,
+          id_producto: newItem.productId,
+          cantidad: newItem.quantity,
+          precio: newItem.price,
+          sub_total: newItem.quantity * newItem.price
+        });
+        await queryRunner.manager.save(saleItem);
+      }
+
+      // 4. Update sale header
+      sale.customer = updateDto.customer;
+      sale.total = newTotal;
+      const updatedSale = await queryRunner.manager.save(sale);
+
+      await queryRunner.commitTransaction();
+      return updatedSale;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async remove(id: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const sale = await queryRunner.manager.findOne(Sale, {
+        where: { id },
+        relations: ['items']
+      });
+      if (!sale) throw new BadRequestException(`Venta con ID ${id} no encontrada.`);
+
+      // Restore stock
+      for (const item of sale.items) {
+        const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
+        if (product) {
+          product.cantidad = Number(product.cantidad) + Number(item.cantidad);
+          await queryRunner.manager.save(product);
+        }
+      }
+
+      // Delete items and sale
+      await queryRunner.manager.delete(SaleItem, { id_venta: id });
+      await queryRunner.manager.delete(Sale, { id });
+
+      await queryRunner.commitTransaction();
+      return { success: true };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }

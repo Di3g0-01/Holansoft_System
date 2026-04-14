@@ -1,20 +1,8 @@
 import { X, Package, Tag, Layers, Ruler, BarChart3, Bell, DollarSign } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
-interface Product {
-  id_producto: number;
-  code: string;
-  nombre: string;
-  marca?: string;
-  tamano?: string;
-  tipo?: string;
-  precio_unidad: number;
-  precio_docena: number;
-  precio_mayoreo: number;
-  cantidad: number;
-  alerta_cantidad: number;
-  category: { name: string } | null;
-}
+import type { Product } from '../../types';
+
 
 interface ProductDetailsModalProps {
   isOpen: boolean;
@@ -53,28 +41,28 @@ export default function ProductDetailsModal({ isOpen, onClose, product }: Produc
             <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl">
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Tag size={12} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.brand') || 'Marca'}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.brand')}</span>
               </div>
               <p className="font-bold text-secondary dark:text-white truncate">{product.marca || '-'}</p>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl">
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Ruler size={12} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.size') || 'Tamaño'}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.size')}</span>
               </div>
               <p className="font-bold text-secondary dark:text-white truncate">{product.tamano || '-'}</p>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl">
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Layers size={12} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.type') || 'Tipo'}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.type')}</span>
               </div>
               <p className="font-bold text-secondary dark:text-white truncate">{product.tipo || '-'}</p>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-3xl">
               <div className="flex items-center gap-2 text-slate-400 mb-1">
                 <Layers size={12} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.category') || 'Categoría'}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest">{t('inventory.form.category')}</span>
               </div>
               <p className="font-bold text-secondary dark:text-white truncate">{product.category?.name || '-'}</p>
             </div>

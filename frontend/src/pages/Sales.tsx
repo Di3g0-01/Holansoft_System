@@ -2,23 +2,13 @@ import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { format } from 'date-fns';
 import AddSaleModal from '../components/sales/AddSaleModal';
+import EditSaleModal from '../components/sales/EditSaleModal';
 import SaleDetailsModal from '../components/sales/SaleDetailsModal';
-import { ShoppingCart, Eye } from 'lucide-react';
+import { ShoppingCart, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { toast } from 'sonner';
+import type { Sale } from '../types';
 
-interface SaleItem {
-  id: number;
-  product: any;
-}
-
-interface Sale {
-  id: number;
-  rpNumber: string;
-  customer: string;
-  date: string;
-  total: number;
-  items: SaleItem[];
-}
 
 export default function SalesPage() {
   const { t } = useLanguage();
@@ -28,6 +18,7 @@ export default function SalesPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchSales = async () => {
     try {
@@ -37,6 +28,17 @@ export default function SalesPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm(t('sales.confirmDelete') || '¿Está seguro de eliminar este registro?')) return;
+    try {
+      await api.delete(`/sales/${id}`);
+      toast.success(t('users.messages.successDelete') || 'Venta eliminada con éxito');
+      fetchSales();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Error al eliminar');
     }
   };
 
@@ -117,7 +119,18 @@ export default function SalesPage() {
                     className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                   >
                     <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{sale.rpNumber}</td>
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{sale.customer}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-gray-700 dark:text-gray-300 font-bold">
+                          {sale.customer === 'common.finalConsumer' ? t('common.finalConsumer') : sale.customer}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-medium italic">
+                          {sale.items?.length > 2 
+                            ? t('reports.table.multipleProducts') 
+                            : sale.items?.map((i: any) => i.product?.nombre).join(', ')}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-center text-gray-500">{format(new Date(sale.date), 'dd/MM/yyyy HH:mm')}</td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
@@ -126,8 +139,33 @@ export default function SalesPage() {
                     </td>
                     <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">
                       <div className="flex items-center justify-end gap-3">
-                        <span>Q {Number(sale.total).toFixed(2)}</span>
-                        <Eye size={16} className="text-slate-300 group-hover:text-primary transition-colors" />
+                        <span className="mr-2">Q {Number(sale.total).toFixed(2)}</span>
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            onClick={() => {
+                              setSelectedSale(sale);
+                              setIsDetailsModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              setSelectedSale(sale);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-orange-500/10 text-slate-400 hover:text-orange-500 rounded-lg transition-all"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(sale.id)}
+                            className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-lg transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -145,6 +183,12 @@ export default function SalesPage() {
       <SaleDetailsModal 
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
+        sale={selectedSale}
+      />
+      <EditSaleModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={fetchSales}
         sale={selectedSale}
       />
     </div>

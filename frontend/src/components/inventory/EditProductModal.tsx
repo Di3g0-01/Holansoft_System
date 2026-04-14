@@ -1,19 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Package, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
+import { X, Plus, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
 import api from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import type { Product, Category } from '../../types';
 
 interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  product: any;
+  product: Product | null;
+}
+
+interface FormData {
+  code: string;
+  name: string;
+  brand: string;
+  size: string;
+  type: string;
+  categoryId: string;
+  priceUnit: string;
+  priceDozen: string;
+  priceWholesale: string;
+  alertQuantity: string;
 }
 
 export default function EditProductModal({ isOpen, onClose, onSuccess, product }: EditProductModalProps) {
   const { t } = useLanguage();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [formData, setFormData] = useState<FormData>({
     code: '',
     name: '',
     brand: '',
@@ -74,6 +88,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!product) return;
     setLoading(true);
     try {
       await api.put(`/products/${product.id_producto}`, {
@@ -107,23 +122,23 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
         onClick={onClose}
       />
       
-      <div className="relative bg-white dark:bg-surface-dark rounded-[3.5rem] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative bg-white dark:bg-surface-dark rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Header content matching screenshot */}
-        <div className="bg-[#003366] p-10 text-white flex items-center justify-between">
+        <div className="bg-[#003366] p-6 sm:p-10 text-white flex items-center justify-between sticky top-0 z-10">
           <div>
-            <h3 className="text-3xl font-black tracking-tight">{t('inventory.form.editTitle')}</h3>
-            <p className="text-white/60 text-sm font-bold">{t('inventory.form.editSubtitle')}</p>
+            <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('inventory.form.editTitle')}</h3>
+            <p className="text-white/60 text-xs sm:text-sm font-bold">{t('inventory.form.editSubtitle')}</p>
           </div>
           <button 
             onClick={onClose}
-            className="hover:bg-white/10 p-3 rounded-2xl transition-colors"
+            className="hover:bg-white/10 p-2 sm:p-3 rounded-2xl transition-colors"
           >
             <X size={28} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 space-y-8">
-          <div className="grid grid-cols-2 gap-8">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-6 sm:space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
             <div className="space-y-3">
               <label className="text-xs font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.code')}</label>
               <input 
@@ -148,7 +163,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
             <div className="space-y-3">
               <label className="text-xs font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.brand')}</label>
               <input 
@@ -229,7 +244,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
               <DollarSign size={20} className="text-primary" />
               <span className="text-xs font-black uppercase tracking-[0.2em]">{t('inventory.form.priceSchema')}</span>
             </div>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.unit')}</label>
                 <div className="relative">

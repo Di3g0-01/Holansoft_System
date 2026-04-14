@@ -41,15 +41,15 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-secondary/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-surface-dark w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-        <div className="bg-[#003366] p-8 text-white flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="relative bg-white dark:bg-surface-dark w-full max-w-lg rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="bg-[#003366] p-6 sm:p-8 text-white flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="bg-white/10 p-2 rounded-xl">
-              <UserPlus size={24} />
+              <UserPlus size={20} className="sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h3 className="text-2xl font-black tracking-tight">{t('users.newUser')}</h3>
-              <p className="text-white/60 text-sm font-bold">{t('users.subtitle')}</p>
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight">{t('users.newUser')}</h3>
+              <p className="text-white/60 text-[10px] sm:text-sm font-bold">{t('users.subtitle')}</p>
             </div>
           </div>
           <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
@@ -86,7 +86,7 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('users.form.password')}</label>
                 <input 
@@ -114,12 +114,12 @@ export default function AddUserModal({ isOpen, onClose, onSuccess }: AddUserModa
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 pt-4 border-t border-gray-100">
-            <button type="button" onClick={onClose} className="text-secondary font-black text-sm px-6">{t('common.cancel')}</button>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-4 border-t border-gray-100">
+            <button type="button" onClick={onClose} className="w-full sm:w-auto text-secondary font-black text-sm py-2">{t('common.cancel')}</button>
             <button 
               type="submit" 
               disabled={loading}
-              className="bg-primary hover:bg-primary-dark text-white font-black px-8 py-4 rounded-2xl shadow-primary transition-all flex items-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white font-black px-8 py-4 rounded-2xl shadow-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? t('common.loading') : <><Check size={20} /> {t('common.add')}</>}
             </button>

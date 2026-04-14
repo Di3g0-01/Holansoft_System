@@ -1,25 +1,10 @@
 import { X, ShoppingBag, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { es, enUS } from 'date-fns/locale';
 
-interface PurchaseItem {
-  id: number;
-  cantidad: number;
-  precio: number;
-  sub_total: number;
-  product: {
-    nombre: string;
-    code: string;
-  };
-}
+import type { Purchase } from '../../types';
 
-interface Purchase {
-  id: number;
-  poNumber: string;
-  provider: string;
-  date: string;
-  total: number;
-  items: PurchaseItem[];
-}
 
 interface PurchaseDetailsModalProps {
   isOpen: boolean;
@@ -28,6 +13,7 @@ interface PurchaseDetailsModalProps {
 }
 
 export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: PurchaseDetailsModalProps) {
+  const { t, language } = useLanguage();
   if (!isOpen || !purchase) return null;
 
   return (
@@ -42,7 +28,7 @@ export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: Purc
               <ShoppingBag size={24} />
             </div>
             <div>
-              <h3 className="text-2xl font-black">Detalle de Compra</h3>
+              <h3 className="text-2xl font-black">{t('purchases.details.title') || 'Detalle de Compra'}</h3>
               <p className="text-white/60 font-bold text-sm uppercase tracking-widest">{purchase.poNumber}</p>
             </div>
           </div>
@@ -55,33 +41,33 @@ export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: Purc
           {/* Info Grid */}
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-3xl">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Proveedor</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('purchases.table.provider')}</p>
               <p className="text-xl font-black text-secondary dark:text-white">{purchase.provider}</p>
             </div>
             <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-3xl">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Fecha de Registro</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t('purchases.table.date')}</p>
               <p className="text-xl font-black text-secondary dark:text-white">
-                {format(new Date(purchase.date), 'PPPP')}
+                {format(new Date(purchase.date), 'PPPP', { locale: language === 'es' ? es : enUS })}
               </p>
             </div>
           </div>
 
           {/* Items Table */}
           <div className="space-y-4">
-            <h4 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Productos Adquiridos</h4>
+            <h4 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">{t('reports.details.products') || 'Productos Adquiridos'}</h4>
             <div className="bg-slate-50 dark:bg-white/5 rounded-[2rem] overflow-hidden border border-slate-100 dark:border-white/5">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-100 dark:bg-black/20 text-slate-500 font-black uppercase tracking-widest text-[10px]">
                   <tr>
-                    <th className="px-6 py-4">Producto</th>
-                    <th className="px-6 py-4 text-center">Cantidad</th>
-                    <th className="px-6 py-4 text-right">Costo U.</th>
-                    <th className="px-6 py-4 text-right">Subtotal</th>
+                    <th className="px-6 py-4">{t('reports.details.product')}</th>
+                    <th className="px-6 py-4 text-center">{t('reports.details.quantity')}</th>
+                    <th className="px-6 py-4 text-right">{t('reports.details.priceCost')}</th>
+                    <th className="px-6 py-4 text-right">{t('reports.details.subtotal')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                   {purchase.items.map((item) => (
-                    <tr key={item.id} className="text-secondary dark:text-white">
+                    <tr key={item.id} className="text-secondary dark:text-white hover:bg-white/50 dark:hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold">{item.product.nombre}</div>
                         <div className="text-[10px] font-black text-slate-400">{item.product.code}</div>
@@ -99,7 +85,7 @@ export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: Purc
           <div className="flex justify-between items-center bg-secondary p-8 rounded-[2rem] text-white shadow-xl">
               <div className="flex items-center gap-3">
                   <div className="bg-white/10 p-2 rounded-lg"><DollarSign size={20} /></div>
-                  <span className="text-sm font-bold uppercase tracking-widest opacity-60">Total de esta compra</span>
+                  <span className="text-sm font-bold uppercase tracking-widest opacity-60">{t('purchases.totalLabel') || 'Total Compra'}</span>
               </div>
               <span className="text-4xl font-black">Q {Number(purchase.total).toFixed(2)}</span>
           </div>

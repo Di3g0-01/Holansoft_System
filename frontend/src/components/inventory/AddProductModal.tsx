@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Package, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
+import { X, Plus, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
 import api from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import type { Category } from '../../types';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -9,10 +10,24 @@ interface AddProductModalProps {
   onSuccess: () => void;
 }
 
+interface FormData {
+  code: string;
+  name: string;
+  brand: string;
+  size: string;
+  type: string;
+  categoryId: string;
+  priceUnit: string;
+  priceDozen: string;
+  priceWholesale: string;
+  stock: string;
+  alertQuantity: string;
+}
+
 export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProductModalProps) {
   const { t } = useLanguage();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [formData, setFormData] = useState<FormData>({
     code: '',
     name: '',
     brand: '',
@@ -77,6 +92,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
       });
       onSuccess();
       onClose();
+      setFormData({
+        code: '',
+        name: '',
+        brand: '',
+        size: '',
+        type: '',
+        categoryId: '',
+        priceUnit: '',
+        priceDozen: '',
+        priceWholesale: '',
+        stock: '',
+        alertQuantity: '5'
+      });
     } catch (err) {
       console.error(err);
       alert(t('inventory.form.savingError'));
@@ -94,12 +122,12 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
         onClick={onClose}
       />
       
-      <div className="relative bg-white dark:bg-surface-dark rounded-[2.5rem] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative bg-white dark:bg-surface-dark rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Header content matching screenshot */}
-        <div className="bg-[#003366] p-8 text-white flex items-center justify-between">
+        <div className="bg-[#003366] p-6 sm:p-8 text-white flex items-center justify-between sticky top-0 z-10">
           <div>
-            <h3 className="text-2xl font-black tracking-tight">{t('inventory.form.newTitle')}</h3>
-            <p className="text-white/60 text-sm font-bold">{t('inventory.form.subtitle')}</p>
+            <h3 className="text-xl sm:text-2xl font-black tracking-tight">{t('inventory.form.newTitle')}</h3>
+            <p className="text-white/60 text-xs sm:text-sm font-bold">{t('inventory.form.subtitle')}</p>
           </div>
           <button 
             onClick={onClose}
@@ -109,8 +137,8 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.code')}</label>
               <input 
@@ -135,7 +163,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.brand')}</label>
               <input 
@@ -190,7 +218,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
                 </div>
               ) : (
                 <select 
-                  className="flex-1 bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20"
+                  className="flex-1 bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                   value={formData.categoryId}
                   onChange={e => setFormData({...formData, categoryId: e.target.value})}
                 >
@@ -216,7 +244,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
               <DollarSign size={16} />
               <span className="text-[10px] font-black uppercase tracking-widest">{t('inventory.form.priceSchema')}</span>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.unit')}</label>
                 <div className="relative">
@@ -262,7 +290,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.initialStock')}</label>
               <div className="flex gap-2">
@@ -293,18 +321,18 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-6 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-4 sm:gap-6 pt-4">
             <button 
               type="button"
               onClick={onClose}
-              className="text-secondary font-black text-sm hover:text-primary transition-colors"
+              className="w-full sm:w-auto text-secondary font-black text-sm hover:text-primary transition-colors py-2"
             >
               {t('common.cancel')}
             </button>
             <button 
               disabled={loading}
               type="submit"
-              className="bg-primary hover:bg-primary-dark text-white font-black px-10 py-4 rounded-2xl shadow-primary flex items-center gap-2 hover:translate-y-[-2px] transition-all disabled:opacity-50"
+              className="w-full sm:w-auto bg-primary hover:bg-primary-dark text-white font-black px-10 py-4 rounded-2xl shadow-primary flex items-center justify-center gap-2 hover:translate-y-[-2px] transition-all disabled:opacity-50"
             >
               <Save size={20} />
               {loading ? t('inventory.form.saving') : t('inventory.form.save')}

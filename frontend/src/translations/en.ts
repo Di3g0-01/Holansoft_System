@@ -27,7 +27,8 @@ export const en = {
       normal: "Normal",
       optimal: "Optimal",
       outOfStock: "Out of Stock"
-    }
+    },
+    finalConsumer: "Final Consumer"
   },
   dashboard: {
     title: "Control Panel",
@@ -56,6 +57,11 @@ export const en = {
       subtitle: "Cloud Services Active • SSL Secured",
       label: "OPERATING SYSTEM"
     },
+    utility: {
+      title: "Performance",
+      subtitle: "Income vs Expense Balance",
+      label: "PROFIT MARGIN"
+    },
     stockAlertModal: {
       title: "Low Stock Alert",
       subtitle: "These products need restocking soon.",
@@ -72,6 +78,7 @@ export const en = {
       lowStockAlert: "Low Stock Products",
       inventoryHealth: "Inventory Health",
       stockAlerts: "Stock Alerts",
+      utilityMonth: "Monthly Utility (Income - Expenses)",
       optimal: "Optimal",
       periods: {
         day: "Day",
@@ -124,7 +131,11 @@ export const en = {
       errorCategory: "Error creating category",
       savingError: "Error saving product",
       placeholderCategory: "Type the new category...",
-      selectCategory: "Select category..."
+      selectCategory: "Select category...",
+      success: "Successful operation"
+    },
+    details: {
+      title: "Product Details"
     }
   },
   users: {
@@ -169,7 +180,8 @@ export const en = {
       bill: "Receipt #",
       customer: "Customer",
       date: "Date",
-      items: "Items"
+      items: "Items",
+      edit: "Edit Sale"
     },
     loading: "Loading sales...",
     noResults: "No results found",
@@ -182,7 +194,16 @@ export const en = {
     finishSale: "Finish Sale",
     processing: "Processing...",
     unitPriceShort: "Unit P.",
-    inStock: "in stock"
+    inStock: "in stock",
+    details: {
+      title: "Sale Details",
+      products: "Sold Products",
+      itemsTitle: "Items in this movement"
+    },
+    confirmDelete: "Are you sure you want to delete this sale? Stock will be restored automatically.",
+    unitsTotal: "Total units",
+    equivalentTo: "Equivalent to",
+    lots: "lot(s)"
   },
   purchases: {
     title: "Purchases Record",
@@ -208,7 +229,18 @@ export const en = {
     enterDetails: "Enter catalog details",
     stockAlert: "Stock Alert",
     priceSchema: "Selling Price Schema",
-    unitary: "Unitary"
+    unitary: "Unitary",
+    currentUnits: "Current units",
+    emptyCart: "Empty Cart",
+    providerError: "Enter provider name",
+    invalidQuantity: "Load at least one product with valid quantity",
+    success: "Purchase registered successfully!",
+    error: "Error registering the purchase",
+    confirmDelete: "Are you sure you want to delete this purchase? Stock will be adjusted automatically.",
+    details: {
+      title: "Purchase Details"
+    },
+    totalLabel: "Total for this purchase"
   },
   reports: {
     title: "Advanced Reports",
@@ -233,7 +265,8 @@ export const en = {
     },
     date: {
       from: "From",
-      to: "To"
+      to: "To",
+      title: "Date"
     },
     results: {
       title: "List of Movements"
@@ -248,7 +281,8 @@ export const en = {
       products: "Product(s) and Code(s)",
       customer: "Customer",
       provider: "Provider",
-      total: "Total Amount"
+      total: "Total Amount",
+      multipleProducts: "Various Products"
     },
     details: {
       title: "Document Details",

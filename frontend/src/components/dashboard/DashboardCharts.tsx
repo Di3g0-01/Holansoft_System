@@ -8,12 +8,12 @@ import { TrendingUp, PieChart as PieIcon, AlertTriangle, CheckCircle, ShoppingBa
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export default function DashboardCharts() {
-  const [weeklySales, setWeeklySales] = useState([]);
-  const [weeklyPurchases, setWeeklyPurchases] = useState([]);
+  const [weeklySales, setWeeklySales] = useState<any[]>([]);
+  const [weeklyPurchases, setWeeklyPurchases] = useState<any[]>([]);
   const [categoryDistribution, setCategoryDistribution] = useState([]);
   const [stockStatus, setStockStatus] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState('day');
+  const [period, setPeriod] = useState('month'); // Changed default to month for utility focus
   const { t, language } = useLanguage();
 
   useEffect(() => {
@@ -45,6 +45,16 @@ export default function DashboardCharts() {
     }
   };
 
+  const utilityData = weeklySales.map((sale, index) => {
+    const purchase = weeklyPurchases.find(p => p.name === sale.name) || { total: 0 };
+    return {
+      name: sale.name,
+      utility: sale.total - purchase.total,
+      sales: sale.total,
+      purchases: purchase.total
+    };
+  });
+
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
   if (loading) return (
@@ -58,7 +68,7 @@ export default function DashboardCharts() {
   return (
     <div className="space-y-8">
       {/* Stats Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20 flex items-center justify-between">
           <div>
             <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.salesWeekly')}</p>
@@ -105,10 +115,15 @@ export default function DashboardCharts() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklySales}>
+              <BarChart data={weeklySales} margin={{ left: 10, right: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 700}} />
-                <YAxis hide />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} 
+                  tickFormatter={(value) => `Q${Number(value).toLocaleString()}`}
+                />
                 <Tooltip 
                   cursor={{fill: '#F1F5F9'}} 
                   contentStyle={{borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
@@ -152,10 +167,15 @@ export default function DashboardCharts() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyPurchases}>
+              <BarChart data={weeklyPurchases} margin={{ left: 10, right: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 700}} />
-                <YAxis hide />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} 
+                  tickFormatter={(value) => `Q${Number(value).toLocaleString()}`}
+                />
                 <Tooltip 
                   cursor={{fill: '#F1F5F9'}} 
                   contentStyle={{borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
@@ -193,6 +213,40 @@ export default function DashboardCharts() {
                 />
                 <Legend iconType="circle" />
               </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Utility Chart */}
+        <div className="bg-white dark:bg-surface-dark p-8 rounded-[3rem] shadow-sm border border-slate-100 dark:border-white/5 lg:col-span-2">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-2xl text-emerald-500"><TrendingUp size={24} /></div>
+            <h4 className="text-xl font-black text-secondary dark:text-white">
+              {t('dashboard.charts.utilityMonth') || 'Utilidad Mensual (Ingresos - Gastos)'}
+            </h4>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={utilityData} margin={{ left: 10, right: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontWeight: 700, fontSize: 10}} 
+                  tickFormatter={(value) => `Q${Number(value).toLocaleString()}`}
+                />
+                <Tooltip 
+                  cursor={{fill: '#F1F5F9'}} 
+                  contentStyle={{borderRadius: '1.5rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}}
+                  formatter={(value: any) => [`Q ${Number(value).toFixed(2)}`, '']}
+                />
+                <Bar dataKey="utility" radius={[6, 6, 0, 0]} barSize={50}>
+                  {utilityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.utility >= 0 ? '#10b981' : '#ef4444'} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

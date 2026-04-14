@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { format } from 'date-fns';
-import { UserPlus, Edit3, Trash2, Search, Shield, User as UserIcon, MoreVertical } from 'lucide-react';
+import { UserPlus, Edit3, Trash2, Search, Shield, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import AddUserModal from '../components/users/AddUserModal';
 import EditUserModal from '../components/users/EditUserModal';
