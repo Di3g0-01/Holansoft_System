@@ -45,7 +45,7 @@ export default function DashboardCharts() {
     }
   };
 
-  const utilityData = weeklySales.map((sale, index) => {
+  const utilityData = weeklySales.map((sale) => {
     const purchase = weeklyPurchases.find(p => p.name === sale.name) || { total: 0 };
     return {
       name: sale.name,

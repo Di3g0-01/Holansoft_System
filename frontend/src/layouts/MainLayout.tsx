@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLanguage } from '../contexts/LanguageContext';
 import clsx from 'clsx';
-import { Globe, X, Menu } from 'lucide-react';
+import { X, Menu } from 'lucide-react';
 
 export default function MainLayout() {
   const { user, logout } = useAuthStore();
