@@ -14,7 +14,7 @@ export class ProductsService {
     if (search) {
       return this.productsRepository.createQueryBuilder('product')
         .leftJoinAndSelect('product.category', 'category')
-        .where('product.nombre LIKE :search OR product.code LIKE :search', { search: `%${search}%` })
+        .where('product.nombre ILIKE :search OR product.code ILIKE :search OR product.marca ILIKE :search OR product.tamano ILIKE :search OR product.tipo ILIKE :search OR category.nombre ILIKE :search', { search: `%${search}%` })
         .getMany();
     }
     return this.productsRepository.find({ relations: ['category'] });

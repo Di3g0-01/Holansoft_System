@@ -453,7 +453,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.updateSellingPrices')}</p>
                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"
@@ -466,7 +466,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Doc. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Doc. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"
@@ -479,7 +479,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">May. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">May. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"

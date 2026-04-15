@@ -5,6 +5,7 @@ import { UserPlus, Edit3, Trash2, Search, Shield, User as UserIcon } from 'lucid
 import { useLanguage } from '../contexts/LanguageContext';
 import AddUserModal from '../components/users/AddUserModal';
 import EditUserModal from '../components/users/EditUserModal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 
 export default function UsersPage() {
@@ -13,10 +14,10 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { t } = useLanguage();
 
-  // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
 
   const fetchUsers = async () => {
     try {
@@ -39,13 +40,19 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(t('users.confirm.delete'))) return;
+    setConfirmDelete({ open: true, id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete.id) return;
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/users/${confirmDelete.id}`);
       toast.success(t('users.messages.successDelete'));
       fetchUsers();
     } catch (err) {
       toast.error(t('users.messages.errorDelete'));
+    } finally {
+      setConfirmDelete({ open: false, id: null });
     }
   };
 
@@ -88,7 +95,7 @@ export default function UsersPage() {
         {/* Users Table / Grid */}
         <div className="bg-white dark:bg-surface-dark rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-white/5 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm min-w-[560px]">
               <thead className="bg-[#F8FAFC] dark:bg-black/20 text-slate-400 font-black uppercase tracking-[0.15em] border-b border-gray-100 dark:border-white/5">
                 <tr>
                   <th className="px-8 py-5 text-[10px]">{t('users.table.username')}</th>
@@ -173,6 +180,16 @@ export default function UsersPage() {
         onClose={() => setIsEditModalOpen(false)} 
         onSuccess={fetchUsers} 
         user={selectedUser}
+      />
+      <ConfirmDialog
+        isOpen={confirmDelete.open}
+        title={t('users.title') + ' - Eliminar'}
+        message={t('users.confirm.delete')}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete({ open: false, id: null })}
       />
     </div>
   );

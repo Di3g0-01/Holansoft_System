@@ -70,7 +70,7 @@ export class SalesService {
     }
   }
 
-  async update(id: number, updateDto: { customer: string; items: { productId: number; quantity: number; price: number }[] }) {
+  async update(id: number, updateDto: { customer: string; date?: string; items: { productId: number; quantity: number; price: number }[] }) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -82,53 +82,65 @@ export class SalesService {
       if (!sale) throw new BadRequestException(`Venta con ID ${id} no encontrada.`);
 
       // 1. Restore old stock
-      for (const item of sale.items) {
-        const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
-        if (product) {
-          product.cantidad = Number(product.cantidad) + Number(item.cantidad);
-          await queryRunner.manager.save(product);
+      if (sale.items && sale.items.length > 0) {
+        for (const item of sale.items) {
+          const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
+          if (product) {
+            product.cantidad = Number(product.cantidad) + Number(item.cantidad);
+            await queryRunner.manager.save(product);
+          }
         }
+        // Remove old items from DB explicitly by ID to avoid orphan issues
+        await queryRunner.manager.delete(SaleItem, { id_venta: id });
       }
 
-      // 2. Clear old items
-      await queryRunner.manager.delete(SaleItem, { id_venta: id });
-
-      // 3. Process new items and calculate total
+      // 2. Process new items and calculate total
       let newTotal = 0;
-      for (const newItem of updateDto.items) {
-        newTotal += newItem.quantity * newItem.price;
+      
+      // Update basic sale properties
+      sale.customer = updateDto.customer;
+      if (updateDto.date) {
+        sale.date = new Date(updateDto.date);
+      }
+      
+      // Save sale header first to ensure ID is solid
+      const savedSale = await queryRunner.manager.save(sale);
+
+      // 3. Create and save new items
+      for (const newItemDto of updateDto.items) {
+        newTotal += newItemDto.quantity * newItemDto.price;
 
         const product = await queryRunner.manager.findOne(Product, {
-          where: { id_producto: newItem.productId }
+          where: { id_producto: newItemDto.productId }
         });
-        if (!product) throw new BadRequestException(`Producto con ID ${newItem.productId} no existe.`);
+        if (!product) throw new BadRequestException(`Producto con ID ${newItemDto.productId} no existe.`);
 
-        if (product.cantidad < newItem.quantity) {
+        if (product.cantidad < newItemDto.quantity) {
           throw new BadRequestException(`Stock insuficiente para el producto ${product.nombre}. Stock actual: ${product.cantidad}`);
         }
 
         // Decrement quantity (stock)
-        product.cantidad = Number(product.cantidad) - Number(newItem.quantity);
+        product.cantidad = Number(product.cantidad) - Number(newItemDto.quantity);
         await queryRunner.manager.save(product);
 
         const saleItem = queryRunner.manager.create(SaleItem, {
-          id_venta: id,
-          id_producto: newItem.productId,
-          cantidad: newItem.quantity,
-          precio: newItem.price,
-          sub_total: newItem.quantity * newItem.price
+          id_venta: savedSale.id, // Explicitly link to the existing sale ID
+          id_producto: newItemDto.productId,
+          cantidad: newItemDto.quantity,
+          precio: newItemDto.price,
+          sub_total: newItemDto.quantity * newItemDto.price
         });
         await queryRunner.manager.save(saleItem);
       }
 
-      // 4. Update sale header
-      sale.customer = updateDto.customer;
-      sale.total = newTotal;
-      const updatedSale = await queryRunner.manager.save(sale);
+      // 4. Update the final total on the sale
+      savedSale.total = newTotal;
+      const finalSale = await queryRunner.manager.save(savedSale);
 
       await queryRunner.commitTransaction();
-      return updatedSale;
+      return finalSale;
     } catch (err) {
+      console.error('[SalesService.update] Error:', err?.message || err);
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {

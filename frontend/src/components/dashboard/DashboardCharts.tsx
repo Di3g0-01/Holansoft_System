@@ -11,14 +11,25 @@ export default function DashboardCharts() {
   const [weeklySales, setWeeklySales] = useState<any[]>([]);
   const [weeklyPurchases, setWeeklyPurchases] = useState<any[]>([]);
   const [categoryDistribution, setCategoryDistribution] = useState([]);
-  const [stockStatus, setStockStatus] = useState([]);
+  const [stockStatus, setStockStatus] = useState<any[]>([]);
+  const [rawStockStatus, setRawStockStatus] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState('month'); // Changed default to month for utility focus
+  const [period, setPeriod] = useState('month');
   const { t, language } = useLanguage();
 
   useEffect(() => {
     fetchData();
-  }, [period]);
+  }, [period, language]); // Re-fetch when period OR language changes
+
+  // Re-translate stock labels when language changes without re-fetching
+  useEffect(() => {
+    if (rawStockStatus.length === 0) return;
+    const translated = rawStockStatus.map((s: any) => ({
+      ...s,
+      name: s.name === 'goodStock' ? t('common.status.optimal') : t('common.status.lowStock')
+    }));
+    setStockStatus(translated);
+  }, [language, rawStockStatus]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -33,6 +44,9 @@ export default function DashboardCharts() {
       setWeeklyPurchases(purchasesRes.data);
       setCategoryDistribution(catRes.data);
       
+      // Keep raw data for calculations (before translation)
+      setRawStockStatus(stockRes.data);
+
       const translatedStock = stockRes.data.map((s: any) => ({
         ...s,
         name: s.name === 'goodStock' ? t('common.status.optimal') : t('common.status.lowStock')
@@ -74,7 +88,7 @@ export default function DashboardCharts() {
             <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.salesWeekly')}</p>
             <h3 className="text-4xl font-black">Q {weeklySales.reduce((a: number, b: any) => a + b.total, 0).toLocaleString()}</h3>
           </div>
-          <div className="bg-white/10 p-4 rounded-3xl"><TrendingUp size={32} /></div>
+          <div className="bg-white/10 w-14 h-14 flex items-center justify-center rounded-3xl font-black text-xl text-white">Q</div>
         </div>
 
         <div className="bg-white dark:bg-surface-dark p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between">
@@ -82,8 +96,11 @@ export default function DashboardCharts() {
             <p className="text-slate-400 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.inventoryHealth')}</p>
             <div className="flex items-center gap-2">
               <h3 className="text-4xl font-black text-secondary dark:text-white">
-                {Math.round((stockStatus.find((s: any) => s.name === t('common.status.optimal')) as any)?.value / 
-                (stockStatus.reduce((a: number, b: any) => a + b.value, 0) || 1) * 100)}%
+                {(() => {
+                  const total = rawStockStatus.reduce((a: number, b: any) => a + (b.value || 0), 0);
+                  const good = rawStockStatus.find((s: any) => s.name === 'goodStock')?.value || 0;
+                  return total > 0 ? Math.round((good / total) * 100) : 100;
+                })()}%
               </h3>
               <span className="text-emerald-500 font-bold text-sm">{t('dashboard.charts.optimal')}</span>
             </div>
@@ -95,7 +112,7 @@ export default function DashboardCharts() {
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.stockAlerts')}</p>
             <h3 className="text-4xl font-black text-secondary dark:text-white">
-              {(stockStatus.find((s: any) => s.name === t('common.status.lowStock')) as any)?.value || 0}
+              {rawStockStatus.find((s: any) => s.name === 'lowStock')?.value ?? 0}
             </h3>
           </div>
           <div className="bg-amber-50 dark:bg-amber-500/10 p-4 rounded-3xl text-amber-500"><AlertTriangle size={32} /></div>

@@ -12,6 +12,12 @@ export const en = {
     add: "Add",
     edit: "Edit",
     delete: "Delete",
+    save: "Save",
+    cancel: "Cancel",
+    actions: "Actions",
+    total: "Total",
+    quantity: "Quantity",
+    wholesale: "Wholesale",
     update: "Update",
     export: "Export",
     saveChanges: "Save Changes",
@@ -20,6 +26,7 @@ export const en = {
     subtotal: "Subtotal",
     cost: "Cost",
     price: "Price",
+    stock: "Stock",
     status: {
       active: "Active",
       inactive: "Inactive",
@@ -201,6 +208,7 @@ export const en = {
       itemsTitle: "Items in this movement"
     },
     confirmDelete: "Are you sure you want to delete this sale? Stock will be restored automatically.",
+    edit: "Edit Sale",
     unitsTotal: "Total units",
     equivalentTo: "Equivalent to",
     lots: "lot(s)"

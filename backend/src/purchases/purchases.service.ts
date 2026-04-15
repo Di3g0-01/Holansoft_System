@@ -86,7 +86,7 @@ export class PurchasesService {
     }
   }
 
-  async update(id: number, updateDto: { provider: string; date: string; items: { productId: number; quantity: number; cost: number; precio_unidad?: number; precio_docena?: number; precio_mayoreo?: number }[] }) {
+  async update(id: number, updateDto: { provider: string; date?: string; items: { productId: number; quantity: number; cost: number; precio_unidad?: number; precio_docena?: number; precio_mayoreo?: number }[] }) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -98,56 +98,67 @@ export class PurchasesService {
       if (!purchase) throw new BadRequestException(`Compra con ID ${id} no encontrada.`);
 
       // 1. Revert old stock (Decrement)
-      for (const item of purchase.items) {
-        const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
-        if (product) {
-          product.cantidad = Number(product.cantidad) - Number(item.cantidad);
-          await queryRunner.manager.save(product);
+      if (purchase.items && purchase.items.length > 0) {
+        for (const item of purchase.items) {
+          const product = await queryRunner.manager.findOne(Product, { where: { id_producto: item.id_producto } });
+          if (product) {
+            product.cantidad = Number(product.cantidad) - Number(item.cantidad);
+            await queryRunner.manager.save(product);
+          }
         }
+        // Remove old items from DB explicitly by ID
+        await queryRunner.manager.delete(PurchaseItem, { id_compra: id });
       }
 
-      // 2. Clear old items
-      await queryRunner.manager.delete(PurchaseItem, { id_compra: id });
-
-      // 3. Process new items and calculate total
+      // 2. Process new items and calculate total
       let newTotal = 0;
-      for (const newItem of updateDto.items) {
-        newTotal += newItem.quantity * newItem.cost;
+      
+      // Update basic purchase properties
+      purchase.provider = updateDto.provider;
+      if (updateDto.date) {
+        purchase.date = new Date(updateDto.date);
+      }
+
+      // Save purchase header first
+      const savedPurchase = await queryRunner.manager.save(purchase);
+
+      // 3. Create and save new items
+      for (const newItemDto of updateDto.items) {
+        newTotal += newItemDto.quantity * newItemDto.cost;
 
         const product = await queryRunner.manager.findOne(Product, {
-          where: { id_producto: newItem.productId }
+          where: { id_producto: newItemDto.productId }
         });
-        if (!product) throw new BadRequestException(`Producto con ID ${newItem.productId} no existe.`);
+        if (!product) throw new BadRequestException(`Producto con ID ${newItemDto.productId} no existe.`);
 
         // Increment stock
-        product.cantidad = Number(product.cantidad) + Number(newItem.quantity);
+        product.cantidad = Number(product.cantidad) + Number(newItemDto.quantity);
         
         // Update selling prices if provided
-        if (newItem.precio_unidad !== undefined) product.precio_unidad = Number(newItem.precio_unidad);
-        if (newItem.precio_docena !== undefined) product.precio_docena = Number(newItem.precio_docena);
-        if (newItem.precio_mayoreo !== undefined) product.precio_mayoreo = Number(newItem.precio_mayoreo);
+        if (newItemDto.precio_unidad !== undefined) product.precio_unidad = Number(newItemDto.precio_unidad);
+        if (newItemDto.precio_docena !== undefined) product.precio_docena = Number(newItemDto.precio_docena);
+        if (newItemDto.precio_mayoreo !== undefined) product.precio_mayoreo = Number(newItemDto.precio_mayoreo);
 
         await queryRunner.manager.save(product);
 
         const purchaseItem = queryRunner.manager.create(PurchaseItem, {
-          id_compra: id,
-          id_producto: newItem.productId,
-          cantidad: newItem.quantity,
-          precio: newItem.cost,
-          sub_total: newItem.quantity * newItem.cost
+          id_compra: savedPurchase.id, // Explicitly link
+          id_producto: newItemDto.productId,
+          cantidad: newItemDto.quantity,
+          precio: newItemDto.cost,
+          sub_total: newItemDto.quantity * newItemDto.cost
         });
         await queryRunner.manager.save(purchaseItem);
       }
 
-      // 4. Update purchase header
-      purchase.provider = updateDto.provider;
-      purchase.date = new Date(updateDto.date);
-      purchase.total = newTotal;
-      const updatedPurchase = await queryRunner.manager.save(purchase);
+      // 4. Update the final total
+      savedPurchase.total = newTotal;
+      const finalPurchase = await queryRunner.manager.save(savedPurchase);
 
       await queryRunner.commitTransaction();
-      return updatedPurchase;
+      return finalPurchase;
     } catch (err) {
+      console.error('[PurchasesService.update] Error:', err?.message || err);
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {

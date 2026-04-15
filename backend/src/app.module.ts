@@ -21,7 +21,8 @@ import { AnalyticsModule } from './analytics/analytics.module';
       type: 'postgres',
       url: process.env.DATABASE_URL,
       autoLoadEntities: true,
-      synchronize: true, // Use carefully in production
+      synchronize: process.env.NODE_ENV !== 'production', // Use carefully in production
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
     }),
     /*
     TypeOrmModule.forRoot({

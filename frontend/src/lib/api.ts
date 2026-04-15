@@ -2,8 +2,11 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuthStore } from '../store/useAuthStore';
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: BASE_URL,
+  timeout: 10000,
 });
 
 api.interceptors.request.use((config) => {
@@ -16,22 +19,18 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    // Show success toasts for POST/PUT/DELETE
-    if (['post', 'put', 'delete'].includes(response.config.method || '')) {
-      toast.success(response.data?.message || 'Operación exitosa');
-    }
     return response;
   },
   (error) => {
-    const message = error.response?.data?.message || 'Error de conexión con el servidor';
-    
-    // Don't toast 401s as they are handled by auth store redirect
-    if (error.response?.status !== 401) {
-      toast.error(message);
-    } else {
+    const status = error.response?.status;
+
+    if (status === 401) {
       useAuthStore.getState().logout();
+    } else if (error.response) {
+      const message = error.response?.data?.message || 'Error en el servidor';
+      toast.error(message, { duration: 5000 });
     }
-    
+
     return Promise.reject(error);
   }
 );

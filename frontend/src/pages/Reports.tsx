@@ -4,6 +4,7 @@ import { format, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { Calendar, TrendingUp, DollarSign, Package, Filter, Search, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import DatePicker from '../components/ui/DatePicker';
 
 type FilterMode = 'day' | 'week' | 'range';
 
@@ -87,6 +88,9 @@ export default function ReportsPage() {
       const matchProducts = item.items?.some((i: any) => 
         i.product?.nombre?.toLowerCase().includes(term) ||
         i.product?.code?.toLowerCase().includes(term) ||
+        i.product?.marca?.toLowerCase().includes(term) ||
+        i.product?.tamano?.toLowerCase().includes(term) ||
+        i.product?.tipo?.toLowerCase().includes(term) ||
         i.product?.category?.nombre?.toLowerCase().includes(term)
       );
 
@@ -116,25 +120,25 @@ export default function ReportsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4">
-          <div className="bg-primary/10 p-4 rounded-2xl text-primary"><DollarSign size={24} /></div>
-          <div>
+        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
+          <div className="bg-primary/10 w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-primary font-black text-xl">Q</div>
+          <div className="min-w-0 overflow-hidden">
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.totalIncome')}</p>
-            <p className="text-2xl font-black text-secondary dark:text-white">Q {stats.total.toLocaleString()}</p>
+            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.total.toLocaleString()}</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4">
-          <div className="bg-blue-500/10 p-4 rounded-2xl text-blue-500"><TrendingUp size={24} /></div>
-          <div>
+        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
+          <div className="bg-blue-500/10 p-4 rounded-2xl text-blue-500 flex-shrink-0"><TrendingUp size={24} /></div>
+          <div className="min-w-0 overflow-hidden">
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.movements')}</p>
-            <p className="text-2xl font-black text-secondary dark:text-white">{stats.count} {t('reports.stats.registries')}</p>
+            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">{stats.count} {t('reports.stats.registries')}</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4">
-          <div className="bg-slate-500/10 p-4 rounded-2xl text-slate-500"><Package size={24} /></div>
-          <div>
+        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
+          <div className="bg-slate-500/10 w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-slate-500 font-black text-xl">Q</div>
+          <div className="min-w-0 overflow-hidden">
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.avgPerTrans')}</p>
-            <p className="text-2xl font-black text-secondary dark:text-white">Q {stats.avg.toFixed(2)}</p>
+            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.avg.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -142,7 +146,7 @@ export default function ReportsPage() {
       <div className="bg-white dark:bg-surface-dark rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden">
         <div className="p-8 space-y-8">
           {/* Controls Bar */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
             <div className="space-y-3">
               <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
                 <Filter size={14} /> {t('reports.filters.title')}
@@ -176,36 +180,27 @@ export default function ReportsPage() {
               </select>
             </div>
 
-            {filterMode === 'range' && (
-              <div className="lg:col-span-2 grid grid-cols-2 gap-4 animate-in slide-in-from-right-10 duration-500">
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">{t('reports.date.from')}</label>
-                  <input 
-                    type="date" 
-                    className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+            {filterMode === 'range' ? (
+              <>
+                <div className="animate-in slide-in-from-right-5 duration-500">
+                  <DatePicker
+                    label={t('reports.date.from')}
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(val) => setStartDate(val)}
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">{t('reports.date.to')}</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="date" 
-                      className="flex-1 bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                    <button 
-                      onClick={generateReport}
-                      disabled={loading || !startDate || !endDate}
-                      className="bg-primary hover:bg-primary-dark disabled:opacity-50 text-white p-3 rounded-2xl shadow-primary transition-all active:scale-95 flex items-center justify-center min-w-[50px]"
-                    >
-                      {loading ? <span className="animate-spin text-xl">⏳</span> : <Search size={22} />}
-                    </button>
-                  </div>
+                <div className="animate-in slide-in-from-right-10 duration-500 space-y-3">
+                  <DatePicker
+                    label={t('reports.date.to')}
+                    value={endDate}
+                    onChange={(val) => setEndDate(val)}
+                  />
                 </div>
-              </div>
+                {/* Search column - we move the search here or keep it at the end */}
+              </>
+            ) : (
+              // Empty space fillers to keep search at the end if not in range mode
+              <div className="hidden lg:block lg:col-span-2" />
             )}
 
             <div className="space-y-3">
@@ -215,12 +210,25 @@ export default function ReportsPage() {
                 <input 
                   type="text"
                   placeholder={t('reports.searchPlaceholder')}
-                  className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3 pl-10 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3.5 pl-10 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
+
+            {/* Range Action Button - Separated for better alignment */}
+            {filterMode === 'range' && (
+              <div className="col-span-1 md:col-span-2 lg:col-span-5 flex justify-end mt-2 animate-in fade-in duration-700">
+                <button 
+                  onClick={generateReport}
+                  disabled={loading || !startDate || !endDate}
+                  className="bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-8 py-3.5 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-black text-sm min-w-[200px]"
+                >
+                  {loading ? <span className="animate-spin text-xl">⏳</span> : <><Search size={16} /> {t('reports.filters.range')}</>}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Results Table Listing */}
@@ -275,7 +283,7 @@ export default function ReportsPage() {
                             </span>
                           </td>
                           <td className="px-8 py-5 text-right">
-                            <span className="font-black text-secondary dark:text-white">Q {Number(item.total).toFixed(2)}</span>
+                            <span className="font-black text-secondary dark:text-white whitespace-nowrap">Q {Number(item.total).toFixed(2)}</span>
                           </td>
                         </tr>
                         {expandedRows.includes(item.id) && (
@@ -312,15 +320,15 @@ export default function ReportsPage() {
                                       <tr key={idx}>
                                         <td className="py-3 font-bold text-secondary dark:text-white">{detail.product?.nombre}</td>
                                         <td className="py-3 text-center font-black">{detail.cantidad}</td>
-                                        <td className="py-3 text-right">Q {Number(detail.precio || 0).toFixed(2)}</td>
-                                        <td className="py-3 text-right font-black">Q {Number((detail.cantidad * (detail.precio || 0))).toFixed(2)}</td>
+                                        <td className="py-3 text-right whitespace-nowrap">Q {Number(detail.precio || 0).toFixed(2)}</td>
+                                        <td className="py-3 text-right font-black whitespace-nowrap">Q {Number((detail.cantidad * (detail.precio || 0))).toFixed(2)}</td>
                                       </tr>
                                     ))}
                                   </tbody>
                                   <tfoot className="border-t-2 border-slate-200 dark:border-white/10">
                                     <tr>
                                       <td colSpan={3} className="py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[10px]">{t('common.total')}</td>
-                                      <td className="py-4 text-right font-black text-xl text-primary">Q {Number(item.total).toFixed(2)}</td>
+                                      <td className="py-4 text-right font-black text-xl text-primary whitespace-nowrap">Q {Number(item.total).toFixed(2)}</td>
                                     </tr>
                                   </tfoot>
                                 </table>

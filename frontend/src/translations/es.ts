@@ -208,6 +208,7 @@ export const es = {
       itemsTitle: "Items de este movimiento"
     },
     confirmDelete: "¿Está seguro de eliminar esta venta? El stock se restaurará automáticamente.",
+    edit: "Editar Venta",
     unitsTotal: "Unidades totales",
     equivalentTo: "Equivale a",
     lots: "lote(s)"

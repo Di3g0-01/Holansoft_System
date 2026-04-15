@@ -241,14 +241,14 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
           {/* Price Schema Box */}
           <div className="bg-[#FFF5F0] rounded-[2.5rem] p-8 space-y-6">
             <div className="flex items-center gap-3 text-secondary/60 ml-2">
-              <DollarSign size={20} className="text-primary" />
+              <span className="text-secondary/60 flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full font-black text-xs">Q</span>
               <span className="text-xs font-black uppercase tracking-[0.2em]">{t('inventory.form.priceSchema')}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.unit')}</label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"
@@ -262,7 +262,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.dozen')}</label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"
@@ -276,7 +276,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.wholesale')}</label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"

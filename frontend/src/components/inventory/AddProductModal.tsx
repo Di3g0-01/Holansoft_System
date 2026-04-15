@@ -241,7 +241,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
           {/* Price Schema Box */}
           <div className="bg-[#FFF5F0] rounded-[2rem] p-6 space-y-4">
             <div className="flex items-center gap-2 text-secondary/60 ml-2">
-              <DollarSign size={16} />
+              <span className="text-secondary/60 flex items-center justify-center w-6 h-6 bg-primary/10 rounded-full font-black text-[10px]">Q</span>
               <span className="text-[10px] font-black uppercase tracking-widest">{t('inventory.form.priceSchema')}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

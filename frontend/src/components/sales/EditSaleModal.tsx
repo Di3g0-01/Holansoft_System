@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Search, ShoppingCart, Trash2, Plus, Minus, Info, Check } from 'lucide-react';
 import type { Product, Sale, SaleItem } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -114,8 +114,7 @@ export default function EditSaleModal({ isOpen, onClose, onSuccess, sale }: Edit
     return cart.reduce((sum: number, item: CartItem) => sum + (item.quantity * item.price), 0);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!sale) return;
     if (cart.length === 0) {
       toast.error(t('sales.emptyCart'));
@@ -125,7 +124,7 @@ export default function EditSaleModal({ isOpen, onClose, onSuccess, sale }: Edit
     setLoading(true);
     try {
       const payload = {
-        customer: customer || t('common.finalConsumer') || 'Consumidor Final',
+        customer: customer.trim() || 'Consumidor Final',
         items: cart.map((item: CartItem) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -134,11 +133,11 @@ export default function EditSaleModal({ isOpen, onClose, onSuccess, sale }: Edit
       };
 
       await api.patch(`/sales/${sale.id}`, payload);
-      toast.success(t('inventory.form.success') || 'Sale updated!');
+      toast.success(t('inventory.form.success') || 'Venta actualizada!');
       onSuccess();
       onClose();
     } catch (err: any) {
-      const msg = err.response?.data?.message || t('sales.error');
+      const msg = err.response?.data?.message || t('sales.error') || 'Error al actualizar';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -182,7 +181,7 @@ export default function EditSaleModal({ isOpen, onClose, onSuccess, sale }: Edit
               <ShoppingCart size={24} className="sm:w-8 sm:h-8" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('sales.edit') || 'Editar Venta'}</h3>
+              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('sales.edit')}</h3>
               <p className="text-white/60 text-[10px] sm:text-sm font-bold">{sale?.rpNumber}</p>
             </div>
           </div>

@@ -37,10 +37,17 @@ export default function InventoryPage() {
   }, []);
 
   const safeProducts = Array.isArray(products) ? products : [];
-  const filteredProducts = safeProducts.filter(p => 
-    String(p.nombre || '').toLowerCase().includes(String(searchTerm || '').toLowerCase()) ||
-    String(p.code || '').toLowerCase().includes(String(searchTerm || '').toLowerCase())
-  );
+  const filteredProducts = safeProducts.filter(p => {
+    const term = searchTerm.toLowerCase();
+    return (
+      String(p.nombre || '').toLowerCase().includes(term) ||
+      String(p.code || '').toLowerCase().includes(term) ||
+      String(p.marca || '').toLowerCase().includes(term) ||
+      String(p.tamano || '').toLowerCase().includes(term) ||
+      String(p.tipo || '').toLowerCase().includes(term) ||
+      String(p.category?.name || p.category?.nombre || '').toLowerCase().includes(term)
+    );
+  });
 
   return (
     <div className="space-y-6">

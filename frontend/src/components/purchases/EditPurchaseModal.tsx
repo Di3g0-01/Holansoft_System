@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Search, ShoppingBag, Trash2, Plus, Minus, Save, DollarSign } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
@@ -114,8 +114,7 @@ export default function EditPurchaseModal({ isOpen, onClose, onSuccess, purchase
     return cart.reduce((sum: number, item: PurchaseCartItem) => sum + (item.quantity * item.cost), 0);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!purchase) return;
     if (cart.length === 0) {
       toast.error(t('purchases.emptyCart') || 'Debe agregar al menos un producto');
@@ -129,8 +128,8 @@ export default function EditPurchaseModal({ isOpen, onClose, onSuccess, purchase
     setLoading(true);
     try {
       const payload = {
-        provider: provider,
-        date: purchase.date, // Keep original date
+        provider: provider.trim(),
+        date: new Date(purchase.date).toISOString(), // Ensure it's always a valid ISO string
         items: cart.map((item: PurchaseCartItem) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -267,7 +266,7 @@ export default function EditPurchaseModal({ isOpen, onClose, onSuccess, purchase
                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.updateSellingPrices')}</p>
                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"
@@ -277,7 +276,7 @@ export default function EditPurchaseModal({ isOpen, onClose, onSuccess, purchase
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Doc. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Doc. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"
@@ -287,7 +286,7 @@ export default function EditPurchaseModal({ isOpen, onClose, onSuccess, purchase
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">May. <DollarSign size={10} /></label>
+                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">May. <span className="text-[10px]">Q</span></label>
                             <input 
                               type="number" 
                               step="0.01"

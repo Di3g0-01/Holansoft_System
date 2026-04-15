@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import AddSaleModal from '../components/sales/AddSaleModal';
 import EditSaleModal from '../components/sales/EditSaleModal';
 import SaleDetailsModal from '../components/sales/SaleDetailsModal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { ShoppingCart, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ export default function SalesPage() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
 
   const fetchSales = async () => {
     try {
@@ -31,20 +33,40 @@ export default function SalesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm(t('sales.confirmDelete') || '¿Está seguro de eliminar este registro?')) return;
+  const handleDeleteRequest = (id: number) => {
+    setConfirmDelete({ open: true, id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete.id) return;
     try {
-      await api.delete(`/sales/${id}`);
+      await api.delete(`/sales/${confirmDelete.id}`);
       toast.success(t('users.messages.successDelete') || 'Venta eliminada con éxito');
       fetchSales();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Error al eliminar');
+    } finally {
+      setConfirmDelete({ open: false, id: null });
     }
   };
 
   const filteredSales = sales.filter(s => {
-    const term = searchTerm.toLowerCase();
-    const matchBase = s.rpNumber?.toLowerCase().includes(term) || s.customer?.toLowerCase().includes(term);
+    const term = searchTerm.toLowerCase().trim();
+    // Resolve the displayed customer name for searching
+    const customerDisplay = (s.customer === 'common.finalConsumer' || s.customer === 'Consumidor Final')
+      ? 'consumidor final'
+      : (s.customer || '').toLowerCase();
+    // 'CF' or 'consumidor' or 'final' all match final consumer
+    const isFinalConsumer = customerDisplay === 'consumidor final';
+    const matchesCF = isFinalConsumer && (
+      'consumidor final'.includes(term) ||
+      'cf'.includes(term) ||
+      term === 'cf' ||
+      'consumidor final'.startsWith(term)
+    );
+    const matchBase = s.rpNumber?.toLowerCase().includes(term) ||
+      customerDisplay.includes(term) ||
+      matchesCF;
     const matchItems = s.items?.some(item => 
       item.product?.nombre?.toLowerCase().includes(term) ||
       item.product?.code?.toLowerCase().includes(term) ||
@@ -89,7 +111,7 @@ export default function SalesPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-sm min-w-[560px]">
             <thead className="bg-gray-50 dark:bg-black/20 text-gray-600 dark:text-gray-400 font-medium border-b border-gray-100 dark:border-white/5">
               <tr>
                 <th className="px-6 py-4">{t('sales.table.bill')}</th>
@@ -118,7 +140,7 @@ export default function SalesPage() {
                     }}
                     className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                   >
-                    <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white">{sale.rpNumber}</td>
+                    <td className="px-6 py-4 font-mono font-medium text-gray-900 dark:text-white whitespace-nowrap">{sale.rpNumber}</td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-gray-700 dark:text-gray-300 font-bold">
@@ -131,7 +153,7 @@ export default function SalesPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-500">{format(new Date(sale.date), 'dd/MM/yyyy HH:mm')}</td>
+                    <td className="px-6 py-4 text-center text-gray-500 whitespace-nowrap">{format(new Date(sale.date), 'dd/MM/yyyy HH:mm')}</td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                         {sale.items?.length || 0}
@@ -139,7 +161,7 @@ export default function SalesPage() {
                     </td>
                     <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">
                       <div className="flex items-center justify-end gap-3">
-                        <span className="mr-2">Q {Number(sale.total).toFixed(2)}</span>
+                        <span className="mr-2 whitespace-nowrap">Q {Number(sale.total).toFixed(2)}</span>
                         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <button 
                             onClick={() => {
@@ -160,7 +182,7 @@ export default function SalesPage() {
                             <Edit2 size={16} />
                           </button>
                           <button 
-                            onClick={() => handleDelete(sale.id)}
+                            onClick={() => handleDeleteRequest(sale.id)}
                             className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-lg transition-all"
                           >
                             <Trash2 size={16} />
@@ -175,6 +197,7 @@ export default function SalesPage() {
           </table>
         </div>
       </div>
+
       <AddSaleModal 
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -190,6 +213,16 @@ export default function SalesPage() {
         onClose={() => setIsEditModalOpen(false)}
         onSuccess={fetchSales}
         sale={selectedSale}
+      />
+      <ConfirmDialog
+        isOpen={confirmDelete.open}
+        title={t('sales.table.bill') + ' - Eliminar'}
+        message={t('sales.confirmDelete') || '¿Está seguro de eliminar esta venta? El stock se restaurará automáticamente.'}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete({ open: false, id: null })}
       />
     </div>
   );

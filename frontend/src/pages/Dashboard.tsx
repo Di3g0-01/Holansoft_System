@@ -174,7 +174,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-400 uppercase tracking-widest group-hover:text-white/80 transition-colors">{t('dashboard.stats.purchases')}</p>
-              <h3 className="text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors">Q {stats.recentPurchases.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.recentPurchases.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
             </div>
             <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between text-xs font-bold text-purple-600 group-hover:text-white transition-colors">
               <span className="flex items-center gap-1">{t('dashboard.actions.viewPurchases')} <ArrowUpRight size={14} /></span>
@@ -193,7 +193,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-400 uppercase tracking-widest group-hover:text-white/80 transition-colors">{t('dashboard.stats.sales')}</p>
-              <h3 className="text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors">Q {stats.recentSales.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.recentSales.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
             </div>
             <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between text-xs font-bold text-green-600 group-hover:text-white transition-colors">
               <span className="flex items-center gap-1">{t('dashboard.actions.viewReports')} <ArrowUpRight size={14} /></span>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
                               {format(new Date(activity.createdAt), 'p', { locale: language === 'es' ? es : enUS })}
                             </p>
                         </div>
-                        <span className={`font-black text-lg ${(activity as any).type === 'purchase' ? 'text-purple-600' : 'text-green-600'}`}>
+                        <span className={`font-black text-base sm:text-lg whitespace-nowrap ${(activity as any).type === 'purchase' ? 'text-purple-600' : 'text-green-600'}`}>
                           Q {Number(activity.total).toFixed(2)}
                         </span>
                     </div>

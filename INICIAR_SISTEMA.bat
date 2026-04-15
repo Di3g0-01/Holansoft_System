@@ -1,77 +1,118 @@
 @echo off
 setlocal
-title Iniciando Sistema Holansoft...
+title Sistema Holansoft - Iniciando...
 
-:: Configuración de colores (si el terminal lo soporta)
+set "ROOT=%~dp0"
+if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
+
 echo ========================================================
 echo          SISTEMA HOLANSOFT - INICIO LOCAL
 echo ========================================================
 echo.
 
-:: 1. Verificar Docker y Database (REQUERIDO para PostgreSQL)
-if exist "docker-compose.yml" (
-    echo [+] Iniciando base de datos en Docker...
-    docker compose up -d
+:: ─── 1. Docker / Base de datos ───────────────────────────
+if exist "%ROOT%\docker-compose.yml" (
+    echo [+] Iniciando base de datos PostgreSQL...
+    docker compose -f "%ROOT%\docker-compose.yml" up -d
     if %errorlevel% neq 0 (
-        echo.
-        echo [!] ERROR CRITICO: No se pudo iniciar Docker Compose.
-        echo     Para usar PostgreSQL, Docker Desktop DEBE estar funcionando.
-        echo.
+        echo [!] ERROR: Docker Compose fallo. Asegurese de que Docker Desktop este abierto.
         pause
         exit /b
     )
 ) else (
-    echo [!] ADVERTENCIA: No se encontro docker-compose.yml. 
-    echo     La conexion a PostgreSQL podria fallar si no tienes el servidor corriendo manualmente.
-    pause
+    echo [!] docker-compose.yml no encontrado.
 )
 
-:: 2. Verificar dependencias de Backend
-if not exist "backend\node_modules\" (
-    echo [!] node_modules no encontrados en backend. Instalando dependencias...
-    cd backend && call npm install && cd ..
+:: ─── 2. Instalar dependencias si faltan ──────────────────
+if not exist "%ROOT%\backend\node_modules\" (
+    echo [+] Instalando dependencias del Backend...
+    pushd "%ROOT%\backend" && call npm install && popd
+)
+if not exist "%ROOT%\frontend\node_modules\" (
+    echo [+] Instalando dependencias del Frontend...
+    pushd "%ROOT%\frontend" && call npm install && popd
 )
 
-:: 3. Verificar dependencias de Frontend
-if not exist "frontend\node_modules\" (
-    echo [!] node_modules no encontrados en frontend. Instalando dependencias...
-    cd frontend && call npm install && cd ..
+:: ─── 3. Compilar backend si no hay dist ───────────────────
+if not exist "%ROOT%\backend\dist\" (
+    echo [+] Compilando Backend por primera vez...
+    pushd "%ROOT%\backend"
+    call npm run build
+    if %errorlevel% neq 0 (
+        echo [!] ERROR: Fallo la compilacion del Backend.
+        pause
+        exit /b
+    )
+    popd
 )
 
-:: 4. Iniciar Backend en una nueva ventana
-echo [+] Iniciando Backend (NestJS)...
-start "Backend Holansoft" cmd /k "cd backend && npm run start:dev"
+:: ─── 4. Script Backend: start:dev con reinicio automatico ────────
+:: Usamos start:dev para recarga automatica al modificar codigo.
+:: El watcher esta configurado en nest-cli.json para ignorar dist/
+:: y archivos temporales de OneDrive, evitando bucles de reinicio.
+set "BACKEND_SCRIPT=%TEMP%\holansoft_backend.bat"
+(
+    echo @echo off
+    echo title Backend - Holansoft
+    echo :LOOP
+    echo pushd "%ROOT%\backend"
+    echo npm run start:dev
+    echo popd
+    echo echo.
+    echo echo [!] Backend detenido. Reiniciando en 4 segundos...
+    echo timeout /t 4 /nobreak ^> nul
+    echo goto LOOP
+) > "%BACKEND_SCRIPT%"
 
-:: 5. Iniciar Frontend en una nueva ventana
-echo [+] Iniciando Frontend (Vite)...
-start "Frontend Holansoft" cmd /k "cd frontend && npm run dev"
+:: ─── 5. Script Frontend: dev con reinicio automatico ─────
+set "FRONTEND_SCRIPT=%TEMP%\holansoft_frontend.bat"
+(
+    echo @echo off
+    echo title Frontend - Holansoft
+    echo :LOOP
+    echo pushd "%ROOT%\frontend"
+    echo npm run dev
+    echo popd
+    echo echo.
+    echo echo [!] Frontend detenido. Reiniciando en 4 segundos...
+    echo timeout /t 4 /nobreak ^> nul
+    echo goto LOOP
+) > "%FRONTEND_SCRIPT%"
 
-:: 6. Espera Dinámica por el Backend
+:: ─── 6. Lanzar ambos con reinicio automatico ─────────────
+echo [+] Iniciando Backend con reinicio automatico...
+start "Backend - Holansoft" cmd /k ""%BACKEND_SCRIPT%""
+
+echo [+] Iniciando Frontend con reinicio automatico...
+start "Frontend - Holansoft" cmd /k ""%FRONTEND_SCRIPT%""
+
+:: ─── 7. Esperar Backend ───────────────────────────────────
 echo.
-echo [+] Esperando a que el Backend este listo en el puerto 3000...
-echo     (Esto puede tardar unos segundos la primera vez)
-echo.
+echo [.] Esperando Backend en puerto 3000...
+:WAIT_BACK
+timeout /t 2 /nobreak > nul
+powershell -NoProfile -Command "if ((Test-NetConnection 127.0.0.1 -Port 3000 -WarningAction SilentlyContinue).TcpTestSucceeded) { exit 0 } else { exit 1 }"
+if %errorlevel% neq 0 goto WAIT_BACK
+echo [OK] Backend listo.
 
-:WAIT_BACKEND
-powershell -Command "$check = (Test-NetConnection localhost -Port 3000 -WarningAction SilentlyContinue).TcpTestSucceeded; if (!$check) { exit 1 } else { exit 0 }"
-if %errorlevel% neq 0 (
-    echo [.] El servidor aun no responde, reintentando...
-    timeout /t 3 /nobreak > nul
-    goto WAIT_BACKEND
-)
+:: ─── 8. Esperar Frontend ──────────────────────────────────
+echo [.] Esperando Frontend en puerto 5173...
+:WAIT_FRONT
+timeout /t 2 /nobreak > nul
+powershell -NoProfile -Command "if ((Test-NetConnection 127.0.0.1 -Port 5173 -WarningAction SilentlyContinue).TcpTestSucceeded) { exit 0 } else { exit 1 }"
+if %errorlevel% neq 0 goto WAIT_FRONT
+echo [OK] Frontend listo.
+
+:: ─── 9. Abrir navegador ───────────────────────────────────
+echo.
+start "" "http://127.0.0.1:5173"
 
 echo.
-echo [+] ¡Servidor Backend detectado!
-echo [+] Abriendo el sistema en el navegador: http://localhost:5173
-echo.
-start "" "http://localhost:5173"
-
 echo ========================================================
-echo            SISTEMA INICIADO EXITOSAMENTE
+echo         HOLANSOFT ACTIVO - No cierres estas ventanas
+echo   Backend:   http://127.0.0.1:3000
+echo   Frontend:  http://127.0.0.1:5173
+echo   Si la pagina se cae, se recupera sola en ~4 segundos
 echo ========================================================
-echo.
-echo [INFO] Puedes cerrar esta ventana. 
-echo [INFO] NO cierres las ventanas de terminal que se abrieron.
 echo.
 pause
-
