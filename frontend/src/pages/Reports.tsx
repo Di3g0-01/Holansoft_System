@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Fragment } from 'react';
 import api from '../lib/api';
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -250,7 +250,7 @@ export default function ReportsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                     {filteredData.map((item) => (
-                      <React.Fragment key={item.id}>
+                      <Fragment key={item.id}>
                         <tr 
                           onClick={() => toggleRow(item.id)}
                           className="hover:bg-slate-50/30 dark:hover:bg-white/5 transition-colors cursor-pointer group"
@@ -335,7 +335,7 @@ export default function ReportsPage() {
                             </td>
                           </tr>
                         )}
-                      </React.Fragment>
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
