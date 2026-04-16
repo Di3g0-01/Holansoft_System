@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filters/global-exception.filter';
 
 async function bootstrap() {
+  console.log('[Nest] Starting bootstrap process...');
   const app = await NestFactory.create(AppModule);
   
   // Clean up CORS for local development
@@ -26,6 +27,6 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
-  console.log(`Application is running on: http://localhost:${port}/api`);
+  console.log(`Application is running on: http://127.0.0.1:${port}/api`);
 }
 bootstrap();

@@ -134,7 +134,7 @@ export default function InventoryPage() {
                     <td className="px-6 py-5">
                       <span className="text-slate-400 font-bold">{product.category?.name || '-'}</span>
                     </td>
-                    <td className="px-6 py-5 text-right font-black text-secondary dark:text-white">
+                    <td className="px-6 py-5 text-right font-black text-secondary dark:text-white whitespace-nowrap">
                       Q {Number(product.precio_unidad || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-5 text-center">

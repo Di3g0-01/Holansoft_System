@@ -3,8 +3,9 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true,
+    "deleteOutDir": false,
     "watchOptions": {
+      "poll": 10000,
       "ignored": [
         "dist/**",
         "node_modules/**",

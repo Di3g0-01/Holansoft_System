@@ -11,7 +11,6 @@ export default function DashboardCharts() {
   const [weeklySales, setWeeklySales] = useState<any[]>([]);
   const [weeklyPurchases, setWeeklyPurchases] = useState<any[]>([]);
   const [categoryDistribution, setCategoryDistribution] = useState([]);
-  const [stockStatus, setStockStatus] = useState<any[]>([]);
   const [rawStockStatus, setRawStockStatus] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('month');
@@ -20,16 +19,6 @@ export default function DashboardCharts() {
   useEffect(() => {
     fetchData();
   }, [period, language]); // Re-fetch when period OR language changes
-
-  // Re-translate stock labels when language changes without re-fetching
-  useEffect(() => {
-    if (rawStockStatus.length === 0) return;
-    const translated = rawStockStatus.map((s: any) => ({
-      ...s,
-      name: s.name === 'goodStock' ? t('common.status.optimal') : t('common.status.lowStock')
-    }));
-    setStockStatus(translated);
-  }, [language, rawStockStatus]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,12 +35,6 @@ export default function DashboardCharts() {
       
       // Keep raw data for calculations (before translation)
       setRawStockStatus(stockRes.data);
-
-      const translatedStock = stockRes.data.map((s: any) => ({
-        ...s,
-        name: s.name === 'goodStock' ? t('common.status.optimal') : t('common.status.lowStock')
-      }));
-      setStockStatus(translatedStock);
     } catch (err) {
       console.error('Error fetching analytics:', err);
     } finally {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
+import { X, Plus, AlertTriangle, Save, Check } from 'lucide-react';
 import api from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { Product, Category } from '../../types';

@@ -103,7 +103,7 @@ export default function SaleDetailsModal({ isOpen, onClose, sale }: SaleDetailsM
               <div className="bg-white/10 w-9 h-9 rounded-lg flex items-center justify-center font-black text-lg">Q</div>
               <span className="text-xs sm:text-sm font-bold uppercase tracking-widest opacity-60">{t('common.total')}</span>
             </div>
-            <span className="text-2xl sm:text-4xl font-black">Q {Number(sale.total).toFixed(2)}</span>
+            <span className="text-2xl sm:text-4xl font-black whitespace-nowrap">Q {Number(sale.total).toFixed(2)}</span>
           </div>
         </div>
       </div>

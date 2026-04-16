@@ -91,15 +91,15 @@ export default function ProductDetailsModal({ isOpen, onClose, product }: Produc
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-slate-100 dark:bg-white/5 p-5 rounded-3xl text-center">
                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">{t('inventory.form.unit')}</p>
-                <p className="text-xl font-black text-secondary dark:text-white">Q {Number(product.precio_unidad).toFixed(2)}</p>
+                <p className="text-xl font-black text-secondary dark:text-white whitespace-nowrap">Q {Number(product.precio_unidad).toFixed(2)}</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-5 rounded-3xl text-center">
                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">{t('inventory.form.dozen')}</p>
-                <p className="text-xl font-black text-secondary dark:text-white">Q {Number(product.precio_docena).toFixed(2)}</p>
+                <p className="text-xl font-black text-secondary dark:text-white whitespace-nowrap">Q {Number(product.precio_docena).toFixed(2)}</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-5 rounded-3xl text-center">
                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">{t('inventory.form.wholesale')}</p>
-                <p className="text-xl font-black text-secondary dark:text-white">Q {Number(product.precio_mayoreo).toFixed(2)}</p>
+                <p className="text-xl font-black text-secondary dark:text-white whitespace-nowrap">Q {Number(product.precio_mayoreo).toFixed(2)}</p>
               </div>
             </div>
           </div>

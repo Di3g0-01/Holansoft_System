@@ -73,8 +73,8 @@ export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: Purc
                         <div className="text-[10px] font-black text-slate-400">{item.product.code}</div>
                       </td>
                       <td className="px-6 py-4 text-center font-black">{item.cantidad}</td>
-                      <td className="px-6 py-4 text-right font-bold">Q {Number(item.precio).toFixed(2)}</td>
-                      <td className="px-6 py-4 text-right font-black">Q {Number(item.sub_total).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-right font-bold whitespace-nowrap">Q {Number(item.precio).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-right font-black whitespace-nowrap">Q {Number(item.sub_total).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -87,7 +87,7 @@ export default function PurchaseDetailsModal({ isOpen, onClose, purchase }: Purc
                   <div className="bg-white/10 p-2 rounded-lg"><DollarSign size={20} /></div>
                   <span className="text-sm font-bold uppercase tracking-widest opacity-60">{t('purchases.totalLabel') || 'Total Compra'}</span>
               </div>
-              <span className="text-4xl font-black">Q {Number(purchase.total).toFixed(2)}</span>
+              <span className="text-4xl font-black whitespace-nowrap">Q {Number(purchase.total).toFixed(2)}</span>
           </div>
         </div>
       </div>

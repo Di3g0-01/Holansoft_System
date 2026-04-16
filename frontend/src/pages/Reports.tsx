@@ -2,9 +2,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import api from '../lib/api';
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
-import { Calendar, TrendingUp, DollarSign, Package, Filter, Search, Download } from 'lucide-react';
+import { Calendar, TrendingUp, Filter, Search, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import DatePicker from '../components/ui/DatePicker';
+import CustomSelect from '../components/ui/CustomSelect';
 
 type FilterMode = 'day' | 'week' | 'range';
 
@@ -168,17 +169,15 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">{t('reports.type.title')}</label>
-              <select 
-                className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3.5 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              >
-                <option value="sales">{t('reports.type.sales')}</option>
-                <option value="purchases">{t('reports.type.purchases')}</option>
-              </select>
-            </div>
+            <CustomSelect 
+              label={t('reports.type.title')}
+              value={type}
+              onChange={(val) => setType(val)}
+              options={[
+                { value: 'sales', label: t('reports.type.sales') },
+                { value: 'purchases', label: t('reports.type.purchases') }
+              ]}
+            />
 
             {filterMode === 'range' ? (
               <>

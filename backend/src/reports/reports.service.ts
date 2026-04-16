@@ -32,28 +32,15 @@ export class ReportsService {
   }
 
   private parseDate(dateStr: string, type: 'start' | 'end'): Date {
-    // We create the date from the string (YYYY-MM-DD)
-    // new Date('2024-04-14') creates 2024-04-14 00:00:00 UTC
-    const date = new Date(dateStr);
+    // Standardize to YYYY-MM-DD format if it contains time
+    const cleanDate = dateStr.split('T')[0];
     
-    if (isNaN(date.getTime())) {
-      const fallback = new Date();
-      if (type === 'start') fallback.setUTCHours(0, 0, 0, 0);
-      else fallback.setUTCHours(23, 59, 59, 999);
-      return fallback;
-    }
-
+    // We create the date to be exactly the start or end of the day in LOCAL time 
+    // where the server/database is running.
     if (type === 'start') {
-      // To account for timezones with positive offsets, we go back a bit
-      date.setUTCHours(0, 0, 0, 0);
-      date.setHours(date.getHours() - 12); 
+      return new Date(`${cleanDate}T00:00:00`);
     } else {
-      // To account for timezones with negative offsets (like the user's -06:00),
-      // we go forward to include "tomorrow morning UTC" which is still "tonight local"
-      date.setUTCHours(23, 59, 59, 999);
-      date.setHours(date.getHours() + 12);
+      return new Date(`${cleanDate}T23:59:59.999`);
     }
-    
-    return date;
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Search, ShoppingBag, Trash2, Plus, Minus, Save, DollarSign } from 'lucide-react';
+import { X, Search, ShoppingBag, Trash2, Plus, Minus, Save } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';

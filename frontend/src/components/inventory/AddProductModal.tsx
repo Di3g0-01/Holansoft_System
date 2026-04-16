@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, DollarSign, AlertTriangle, Save, Check } from 'lucide-react';
+import { X, Plus, AlertTriangle, Save, Check } from 'lucide-react';
 import api from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { Category } from '../../types';
@@ -248,7 +248,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.unit')}</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"
@@ -262,7 +262,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.dozen')}</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"
@@ -276,7 +276,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.wholesale')}</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
                   <input 
                     required
                     type="number"

@@ -147,7 +147,7 @@ export default function PurchasesPage() {
                         {purchase.items?.length || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold">
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold whitespace-nowrap">
                       Q {Number(purchase.total).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>

@@ -325,7 +325,7 @@ export default function DashboardPage() {
                 <button 
                   onClick={() => {
                     setIsModalOpen(false);
-                    navigate('/inventory');
+                    navigate('/purchases');
                   }}
                   className="flex-1 bg-primary hover:bg-primary-dark text-white font-black py-5 rounded-3xl shadow-primary transition-all flex items-center justify-center gap-2"
                 >
