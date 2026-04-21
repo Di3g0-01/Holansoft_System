@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit3, Check, Shield, User as UserIcon, Lock } from 'lucide-react';
+import { X, Edit3, Check, User as UserIcon, Lock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';

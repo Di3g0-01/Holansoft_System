@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { format } from 'date-fns';
-import AddSaleModal from '../components/sales/AddSaleModal';
 import EditSaleModal from '../components/sales/EditSaleModal';
 import SaleDetailsModal from '../components/sales/SaleDetailsModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { ShoppingCart, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import type { Sale } from '../types';

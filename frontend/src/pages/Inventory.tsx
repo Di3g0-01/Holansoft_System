@@ -6,7 +6,7 @@ import EditProductModal from '../components/inventory/EditProductModal';
 import ProductDetailsModal from '../components/inventory/ProductDetailsModal';
 import ImportExcelModal from '../components/inventory/ImportExcelModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { Package, Plus, Search, Edit3, Trash2, Filter, AlertTriangle, Upload, Download } from 'lucide-react';
+import { Package, Plus, Search, Edit3, Trash2, AlertTriangle, Upload, Download } from 'lucide-react';
 import type { Product, Category } from '../types';
 import { usePagination } from '../hooks/usePagination';
 import { Pagination } from '../components/ui/Pagination';
@@ -160,7 +160,7 @@ export default function InventoryPage() {
                   onChange={(val) => setSelectedCategory(val)}
                   options={[
                     { value: '', label: 'Todas las Categorías' },
-                    ...categories.map(cat => ({ value: String(cat.id), label: cat.name }))
+                    ...categories.map(cat => ({ value: String(cat.id), label: cat.name || '' }))
                   ]}
                 />
              </div>

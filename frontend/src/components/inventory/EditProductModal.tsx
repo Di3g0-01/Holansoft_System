@@ -222,7 +222,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
                   <CustomSelect
                     options={[
                       { value: '', label: 'Seleccionar categoría...' },
-                      ...categories.map(cat => ({ value: String(cat.id), label: cat.name }))
+                      ...categories.map(cat => ({ value: String(cat.id), label: cat.name || '' }))
                     ]}
                     value={formData.categoryId || ''}
                     onChange={(value) => setFormData({...formData, categoryId: value})}

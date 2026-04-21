@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Info, Plus, Minus, X, Trash2, Check, Printer } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useState, useEffect } from 'react';
+import { Search, Plus, Minus, X, Trash2, Printer } from 'lucide-react';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import InputDialog from '../components/ui/InputDialog';
@@ -22,7 +21,6 @@ interface CartItem {
 }
 
 export default function PosPage() {
-  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -33,7 +31,6 @@ export default function PosPage() {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [showConversion, setShowConversion] = useState<number | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -129,7 +126,7 @@ export default function PosPage() {
         }))
       };
 
-      const res = await api.post('/sales', payload);
+      await api.post('/sales', payload);
       toast.success('Venta Procesada');
       
       // Attempt PDF Generation
@@ -194,7 +191,8 @@ export default function PosPage() {
           {filteredProducts.map(product => (
             <div 
               key={product.id_producto}
-              className="flex px-4 py-4 mb-2 bg-white dark:bg-black/10 border border-transparent rounded-xl transition-all items-center text-sm"
+              onClick={() => addToCart(product)}
+              className="flex px-4 py-4 mb-2 bg-white dark:bg-black/10 border border-transparent hover:border-primary/30 rounded-xl transition-all items-center text-sm cursor-pointer group"
             >
               <div className="w-1/6 font-mono font-bold text-gray-400">{product.code}</div>
               <div className="w-2/6 font-black text-secondary dark:text-white">{product.nombre}</div>

@@ -1,6 +1,4 @@
-import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
 import CustomSelect from './CustomSelect';
 
 interface PaginationProps {
@@ -20,7 +18,6 @@ export function Pagination({
   onChangePage,
   onChangeItemsPerPage,
 }: PaginationProps) {
-  const { t } = useLanguage();
   const pageSizes = [10, 25, 50, 100, 'Todos'];
 
   const startIndex = itemsPerPage === 'Todos' ? 1 : (currentPage - 1) * itemsPerPage + 1;

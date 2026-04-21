@@ -359,7 +359,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                         <CustomSelect
                           options={[
                             { value: '', label: t('inventory.form.selectCategory') || 'Seleccionar...' },
-                            ...categories.map((cat: Category) => ({ value: String(cat.id), label: cat.nombre || cat.name }))
+                            ...categories.map((cat: Category) => ({ value: String(cat.id), label: (cat.nombre || cat.name || '') as string }))
                           ]}
                           value={newProduct.categoryId}
                           onChange={(val) => setNewProduct({ ...newProduct, categoryId: val })}
