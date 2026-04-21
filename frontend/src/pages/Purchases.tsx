@@ -9,6 +9,8 @@ import { ShoppingBag, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import type { Purchase } from '../types';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/ui/Pagination';
 
 
 export default function PurchasesPage() {
@@ -61,7 +63,17 @@ export default function PurchasesPage() {
     );
 
     return matchBase || matchItems;
-  });
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedItems,
+    handleChangePage,
+    handleChangeItemsPerPage
+  } = usePagination(filteredPurchases, 10);
 
   const handleShowDetails = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -88,7 +100,7 @@ export default function PurchasesPage() {
         </button>
       </div>
 
-      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5">
         <div className="p-4 border-b border-gray-100 dark:border-white/5 flex gap-4">
           <div className="relative flex-1 max-w-md">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
@@ -124,7 +136,7 @@ export default function PurchasesPage() {
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">{t('purchases.noResults')}</td>
                 </tr>
               ) : (
-                filteredPurchases.map((purchase) => (
+                paginatedItems.map((purchase) => (
                   <tr 
                     key={purchase.id} 
                     onClick={() => handleShowDetails(purchase)}
@@ -141,7 +153,7 @@ export default function PurchasesPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center text-gray-500">{format(new Date(purchase.date), 'dd/MM/yyyy')}</td>
+                    <td className="px-6 py-4 text-center text-gray-500">{format(new Date(purchase.date), 'dd/MM/yyyy HH:mm')}</td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                         {purchase.items?.length || 0}
@@ -181,6 +193,15 @@ export default function PurchasesPage() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onChangePage={handleChangePage}
+          onChangeItemsPerPage={handleChangeItemsPerPage}
+        />
       </div>
       <AddPurchaseModal 
         isOpen={isAddModalOpen}

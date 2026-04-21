@@ -4,8 +4,15 @@ import { useLanguage } from '../contexts/LanguageContext';
 import AddProductModal from '../components/inventory/AddProductModal';
 import EditProductModal from '../components/inventory/EditProductModal';
 import ProductDetailsModal from '../components/inventory/ProductDetailsModal';
-import { Package, Plus, Search, Edit3, Trash2 } from 'lucide-react';
-import type { Product } from '../types';
+import ImportExcelModal from '../components/inventory/ImportExcelModal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import { Package, Plus, Search, Edit3, Trash2, Filter, AlertTriangle, Upload, Download } from 'lucide-react';
+import type { Product, Category } from '../types';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/ui/Pagination';
+import CustomSelect from '../components/ui/CustomSelect';
+import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
 
 
 export default function InventoryPage() {
@@ -15,8 +22,15 @@ export default function InventoryPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; id: number | null }>({ open: false, id: null });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Categorias y Filtros
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [showLowStockOnly, setShowLowStockOnly] = useState(false);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -32,22 +46,83 @@ export default function InventoryPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await api.get('/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteRequest = (id: number) => {
+    setConfirmDelete({ open: true, id });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmDelete.id) return;
+    try {
+      await api.delete(`/products/${confirmDelete.id}`);
+      toast.success(t('users.messages.successDelete') || 'Producto eliminado con éxito');
+      fetchProducts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Error al eliminar');
+    } finally {
+      setConfirmDelete({ open: false, id: null });
+    }
+  };
+
+  const handleExport = () => {
+    if (filteredProducts.length === 0) return;
+    const exportData = filteredProducts.map(p => ({
+      Codigo: p.code,
+      Nombre: p.nombre,
+      Marca: p.marca,
+      Tamaño: p.tamano,
+      Tipo: p.tipo,
+      Categoria: p.category?.name || p.category?.nombre || '',
+      'Precio Unidad': p.precio_unidad,
+      Docena: p.precio_docena,
+      Mayoreo: p.precio_mayoreo,
+      Cantidad: p.cantidad,
+      Alerta: p.alerta_cantidad
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventario');
+    XLSX.writeFile(workbook, 'Inventario_Productos.xlsx');
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const safeProducts = Array.isArray(products) ? products : [];
   const filteredProducts = safeProducts.filter(p => {
     const term = searchTerm.toLowerCase();
-    return (
-      String(p.nombre || '').toLowerCase().includes(term) ||
+    const matchSearch = String(p.nombre || '').toLowerCase().includes(term) ||
       String(p.code || '').toLowerCase().includes(term) ||
       String(p.marca || '').toLowerCase().includes(term) ||
       String(p.tamano || '').toLowerCase().includes(term) ||
-      String(p.tipo || '').toLowerCase().includes(term) ||
-      String(p.category?.name || p.category?.nombre || '').toLowerCase().includes(term)
-    );
+      String(p.tipo || '').toLowerCase().includes(term);
+    
+    const matchCategory = selectedCategory ? String(p.id_categoria) === selectedCategory : true;
+    const matchLowStock = showLowStockOnly ? (p.cantidad || 0) <= (p.alerta_cantidad || 0) : true;
+
+    return matchSearch && matchCategory && matchLowStock;
   });
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedItems,
+    handleChangePage,
+    handleChangeItemsPerPage
+  } = usePagination(filteredProducts, 10);
 
   return (
     <div className="space-y-6">
@@ -65,9 +140,9 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 dark:border-white/5 flex gap-4">
-          <div className="relative flex-1 max-w-md">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5">
+        <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-auto md:flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
@@ -76,6 +151,43 @@ export default function InventoryPage() {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+             <div className="w-[200px]">
+                <CustomSelect 
+                  value={selectedCategory}
+                  onChange={(val) => setSelectedCategory(val)}
+                  options={[
+                    { value: '', label: 'Todas las Categorías' },
+                    ...categories.map(cat => ({ value: String(cat.id), label: cat.name }))
+                  ]}
+                />
+             </div>
+
+             <button 
+                onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+                className={`py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 transition-colors ${showLowStockOnly ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-50 text-slate-600 dark:bg-black/20 dark:text-slate-300'}`}
+              >
+                <AlertTriangle size={16} />
+                Bajo Stock
+             </button>
+
+             <button 
+                onClick={() => setIsImportModalOpen(true)}
+                className="py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
+              >
+                <Upload size={16} />
+                Importar
+             </button>
+
+             <button 
+                onClick={handleExport}
+                className="py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
+              >
+                <Download size={16} />
+                Exportar
+             </button>
           </div>
         </div>
 
@@ -102,7 +214,7 @@ export default function InventoryPage() {
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-500">{t('common.noData')}</td>
                 </tr>
               ) : (
-                filteredProducts.map((product, index) => {
+                paginatedItems.map((product, index) => {
                   if (!product) return null;
                   return (
                   <tr 
@@ -168,7 +280,10 @@ export default function InventoryPage() {
                           <Edit3 size={18} />
                         </button>
                         <button 
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteRequest(product.id_producto);
+                          }}
                           className="bg-white dark:bg-white/5 p-2 rounded-xl text-slate-400 hover:text-red-500 hover:shadow-md transition-all border border-slate-100 dark:border-white/5"
                         >
                           <Trash2 size={18} />
@@ -181,6 +296,15 @@ export default function InventoryPage() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onChangePage={handleChangePage}
+          onChangeItemsPerPage={handleChangeItemsPerPage}
+        />
       </div>
 
       <AddProductModal 
@@ -200,6 +324,23 @@ export default function InventoryPage() {
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         product={selectedProduct}
+      />
+
+      <ImportExcelModal 
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={fetchProducts}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDelete.open}
+        title={'Eliminar Producto'}
+        message={'¿Está seguro de eliminar este producto? Esta acción no se puede deshacer.'}
+        confirmLabel={t('common.delete') || 'Eliminar'}
+        cancelLabel={t('common.cancel') || 'Cancelar'}
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDelete({ open: false, id: null })}
       />
     </div>
   );

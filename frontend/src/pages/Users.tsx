@@ -7,6 +7,8 @@ import AddUserModal from '../components/users/AddUserModal';
 import EditUserModal from '../components/users/EditUserModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/ui/Pagination';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -61,6 +63,16 @@ export default function UsersPage() {
     u.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedItems,
+    handleChangePage,
+    handleChangeItemsPerPage
+  } = usePagination(filteredUsers, 10);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -93,7 +105,7 @@ export default function UsersPage() {
         </div>
 
         {/* Users Table / Grid */}
-        <div className="bg-white dark:bg-surface-dark rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-white/5 overflow-hidden">
+        <div className="bg-white dark:bg-surface-dark rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-white/5">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm min-w-[560px]">
               <thead className="bg-[#F8FAFC] dark:bg-black/20 text-slate-400 font-black uppercase tracking-[0.15em] border-b border-gray-100 dark:border-white/5">
@@ -125,7 +137,7 @@ export default function UsersPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredUsers.map((user) => (
+                  paginatedItems.map((user) => (
                     <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-3">
@@ -167,6 +179,15 @@ export default function UsersPage() {
               </tbody>
             </table>
           </div>
+          
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onChangePage={handleChangePage}
+            onChangeItemsPerPage={handleChangeItemsPerPage}
+          />
         </div>
       </div>
 

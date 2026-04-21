@@ -9,6 +9,8 @@ import { ShoppingCart, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import type { Sale } from '../types';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/ui/Pagination';
 
 
 export default function SalesPage() {
@@ -16,7 +18,6 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -74,7 +75,17 @@ export default function SalesPage() {
       item.product?.category?.nombre?.toLowerCase().includes(term)
     );
     return matchBase || matchItems;
-  });
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedItems,
+    handleChangePage,
+    handleChangeItemsPerPage
+  } = usePagination(filteredSales, 10);
 
   useEffect(() => {
     fetchSales();
@@ -87,16 +98,9 @@ export default function SalesPage() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('sales.title')}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('sales.subtitle')}</p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-2xl font-black shadow-primary flex items-center gap-2 transition-all hover:translate-y-[-2px] active:scale-95"
-        >
-          <ShoppingCart size={20} />
-          {t('sales.newSale')}
-        </button>
       </div>
 
-      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5">
         <div className="p-4 border-b border-gray-100 dark:border-white/5 flex gap-4">
           <div className="relative flex-1 max-w-md">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
@@ -131,7 +135,7 @@ export default function SalesPage() {
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('sales.noResults')}</td>
                 </tr>
               ) : (
-                filteredSales.map((sale) => (
+                paginatedItems.map((sale) => (
                   <tr 
                     key={sale.id} 
                     onClick={() => {
@@ -196,13 +200,17 @@ export default function SalesPage() {
             </tbody>
           </table>
         </div>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onChangePage={handleChangePage}
+          onChangeItemsPerPage={handleChangeItemsPerPage}
+        />
       </div>
 
-      <AddSaleModal 
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSuccess={fetchSales}
-      />
       <SaleDetailsModal 
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}

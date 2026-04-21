@@ -3,6 +3,8 @@ import { X, Search, ShoppingBag, Trash2, Plus, Minus, Check, Save } from 'lucide
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';
+import InputDialog from '../ui/InputDialog';
+import CustomSelect from '../ui/CustomSelect';
 import type { Product, Category } from '../../types';
 
 interface AddPurchaseModalProps {
@@ -42,7 +44,11 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
   const [cart, setCart] = useState<PurchaseCartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderNumber] = useState(`C-${Date.now().toString().slice(-6)}`);
-  const [provider, setProvider] = useState('');
+  
+  const [providers, setProviders] = useState<string[]>(['Proveedor General']);
+  const [selectedProvider, setSelectedProvider] = useState('Proveedor General');
+  const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
+
   const { t } = useLanguage();
   const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
 
@@ -166,8 +172,8 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       toast.error(t('purchases.emptyCart') || 'Debe agregar al menos un producto');
       return;
     }
-    if (!provider.trim()) {
-      toast.error(t('purchases.providerError') || 'Escriba el nombre del proveedor');
+    if (!selectedProvider.trim()) {
+      toast.error(t('purchases.providerError') || 'Seleccione un proveedor proveedor');
       return;
     }
     if (cart.some((item: PurchaseCartItem) => item.quantity < 1)) {
@@ -179,7 +185,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     try {
       const payload = {
         poNumber: orderNumber,
-        provider: provider,
+        provider: selectedProvider,
         date: new Date().toISOString(),
         items: cart.map((item: PurchaseCartItem) => ({
           productId: item.productId,
@@ -196,7 +202,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       onSuccess();
       onClose();
       setCart([]);
-      setProvider('');
+      setSelectedProvider('Proveedor General');
     } catch (err: any) {
       toast.error(err.response?.data?.message || t('purchases.error') || 'Error al registrar la compra');
     } finally {
@@ -350,12 +356,14 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.category')}</label>
-                        <select required className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.categoryId} onChange={e => setNewProduct({...newProduct, categoryId: e.target.value})}>
-                          <option value="">{t('inventory.form.selectCategory')}</option>
-                          {categories.map((cat: Category) => (
-                            <option key={cat.id} value={cat.id}>{cat.nombre || cat.name}</option>
-                          ))}
-                        </select>
+                        <CustomSelect
+                          options={[
+                            { value: '', label: t('inventory.form.selectCategory') || 'Seleccionar...' },
+                            ...categories.map((cat: Category) => ({ value: String(cat.id), label: cat.nombre || cat.name }))
+                          ]}
+                          value={newProduct.categoryId}
+                          onChange={(val) => setNewProduct({ ...newProduct, categoryId: val })}
+                        />
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('purchases.stockAlert')}</label>
@@ -399,13 +407,21 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
           <div className="flex-1 bg-white dark:bg-black/5 p-4 sm:p-8 flex flex-col gap-4 sm:gap-6 overflow-hidden">
             <div className="space-y-3 shrink-0">
               <label className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] ml-2">{t('purchases.providerLabel')}</label>
-              <input 
-                type="text"
-                placeholder={t('purchases.providerPlaceholder')}
-                className="w-full bg-[#E5E7EB] border-none rounded-2xl p-5 font-bold text-secondary outline-none focus:ring-2 focus:ring-blue-500/20"
-                value={provider}
-                onChange={e => setProvider(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <CustomSelect
+                    options={providers.map(p => ({ value: p, label: p }))}
+                    value={selectedProvider}
+                    onChange={val => setSelectedProvider(val)}
+                  />
+                </div>
+                <button 
+                  onClick={() => setIsProviderModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-2xl shadow-sm transition-transform active:scale-95"
+                >
+                  <Plus size={24} />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
@@ -523,6 +539,19 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
           </div>
         </div>
       </div>
+
+      <InputDialog
+        isOpen={isProviderModalOpen}
+        title="Nuevo Proveedor"
+        placeholder="Nombre del proveedor..."
+        onConfirm={(name) => {
+          setProviders(prev => [...prev, name]);
+          setSelectedProvider(name);
+          setIsProviderModalOpen(false);
+        }}
+        onCancel={() => setIsProviderModalOpen(false)}
+      />
+
     </div>
   );
 }

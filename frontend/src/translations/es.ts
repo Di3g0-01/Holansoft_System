@@ -25,8 +25,8 @@ export const es = {
     units: "Unidades",
     subtotal: "Subtotal",
     cost: "Costo",
-    price: "Precio",
-    stock: "Existencia",
+    price: "P. Uni.",
+    stock: "Stock",
     status: {
       active: "Activo",
       inactive: "Inactivo",
@@ -106,11 +106,11 @@ export const es = {
     filters: "Filtros de Búsqueda",
     quickCreate: "Creación Rápida",
     table: {
-      code: "Código",
+      code: "Cód.",
       name: "Producto",
-      category: "Categoría",
+      category: "Cat.",
       stock: "Stock",
-      status: "Estado",
+      status: "Est.",
       prices: "Precios"
     },
     form: {
@@ -184,10 +184,10 @@ export const es = {
     newSale: "Nueva Venta",
     searchPlaceholder: "Buscar por Recibo # o Cliente...",
     table: {
-      bill: "Recibo #",
+      bill: "Fact. #",
       customer: "Cliente",
       date: "Fecha",
-      items: "Items",
+      items: "Cant.",
       edit: "Editar Venta"
     },
     loading: "Cargando ventas...",
@@ -219,10 +219,10 @@ export const es = {
     newPurchase: "Nueva Compra",
     searchPlaceholder: "Buscar por PO Number o Proveedor...",
     table: {
-      bill: "PO Number",
-      provider: "Proveedor",
+      bill: "Fact. #",
+      provider: "Prov.",
       date: "Fecha",
-      items: "Items"
+      items: "Cant."
     },
     loading: "Cargando compras...",
     noResults: "No se encontraron resultados",

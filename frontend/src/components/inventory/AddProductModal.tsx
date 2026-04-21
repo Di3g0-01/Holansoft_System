@@ -3,6 +3,7 @@ import { X, Plus, AlertTriangle, Save, Check } from 'lucide-react';
 import api from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import type { Category } from '../../types';
+import CustomSelect from '../ui/CustomSelect';
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -217,16 +218,16 @@ export default function AddProductModal({ isOpen, onClose, onSuccess }: AddProdu
                   </button>
                 </div>
               ) : (
-                <select 
-                  className="flex-1 bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                  value={formData.categoryId}
-                  onChange={e => setFormData({...formData, categoryId: e.target.value})}
-                >
-                  <option value="">{t('inventory.form.selectCategory')}</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+                <div className="flex-1 w-full">
+                  <CustomSelect
+                    options={[
+                      { value: '', label: 'Seleccionar categoría...' },
+                      ...categories.map(cat => ({ value: String(cat.id), label: cat.name }))
+                    ]}
+                    value={formData.categoryId || ''}
+                    onChange={(value) => setFormData({...formData, categoryId: value})}
+                  />
+                </div>
               )}
               <button 
                 type="button"

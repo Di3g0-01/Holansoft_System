@@ -30,6 +30,10 @@ export default function CustomSelect({ label, options, value, onChange, classNam
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className={`space-y-3 ${className}`} ref={dropdownRef}>
       {label && (
@@ -41,7 +45,7 @@ export default function CustomSelect({ label, options, value, onChange, classNam
       <div className="relative">
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={toggleDropdown}
           className={`
             w-full flex items-center justify-between
             bg-slate-100/50 dark:bg-black/20 
@@ -61,12 +65,14 @@ export default function CustomSelect({ label, options, value, onChange, classNam
 
         {isOpen && (
           <div className="
-            absolute z-[100] mt-3 w-full 
+            absolute z-[150] w-full 
             bg-white dark:bg-surface-dark 
             rounded-[2rem] shadow-2xl 
             border border-slate-100 dark:border-white/5 
-            overflow-hidden animate-in zoom-in-95 fade-in duration-200
+            overflow-hidden animate-in fade-in duration-200
             backdrop-blur-xl bg-opacity-90 dark:bg-opacity-90
+            top-full mt-3 origin-top
+            zoom-in-95
           ">
             <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
               {options.map((option) => (

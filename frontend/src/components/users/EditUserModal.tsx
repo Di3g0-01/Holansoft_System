@@ -3,6 +3,7 @@ import { X, Edit3, Check, Shield, User as UserIcon, Lock } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';
+import CustomSelect from '../ui/CustomSelect';
 
 interface User {
   id: number;
@@ -125,17 +126,14 @@ export default function EditUserModal({ isOpen, onClose, onSuccess, user }: Edit
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('users.form.role')}</label>
-                <div className="relative">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <select 
-                    className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 pl-12 text-secondary font-black outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                  <CustomSelect
+                    options={[
+                      { value: 'user', label: t('users.form.standardUser') },
+                      { value: 'admin', label: t('users.form.admin') }
+                    ]}
                     value={formData.role}
-                    onChange={e => setFormData({...formData, role: e.target.value})}
-                  >
-                    <option value="user">{t('users.form.standardUser')}</option>
-                    <option value="admin">{t('users.form.admin')}</option>
-                  </select>
-                </div>
+                    onChange={(val) => setFormData({ ...formData, role: val })}
+                  />
               </div>
             </div>
           </div>

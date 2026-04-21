@@ -6,6 +6,11 @@ import { Calendar, TrendingUp, Filter, Search, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import DatePicker from '../components/ui/DatePicker';
 import CustomSelect from '../components/ui/CustomSelect';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { usePagination } from '../hooks/usePagination';
+import { Pagination } from '../components/ui/Pagination';
 
 type FilterMode = 'day' | 'week' | 'range';
 
@@ -65,6 +70,57 @@ export default function ReportsPage() {
 
   const generateReport = () => fetchData(startDate, endDate);
 
+  const handleExportPDF = () => {
+    if (filteredData.length === 0) {
+      toast.error(t('reports.noData.title'));
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Add Branding / Header
+    doc.setFontSize(20);
+    doc.setTextColor(40);
+    doc.text('Sistema HolanSoft', 14, 22);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Reporte de ${type === 'sales' ? 'Ventas' : 'Compras'}`, 14, 30);
+    doc.text(`Periodo: ${startDate} - ${endDate}`, 14, 37);
+    doc.text(`Generado el: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 44);
+
+    // Prepare table data
+    const tableColumn = [
+      t('reports.date.title') || 'Fecha',
+      type === 'sales' ? t('reports.table.customer') : t('reports.table.provider'),
+      'ID Documento',
+      t('reports.table.total')
+    ];
+    
+    const tableRows = filteredData.map(item => [
+      format(new Date(item.date), 'dd/MM/yyyy'),
+      type === 'sales' ? (item.customer === 'common.finalConsumer' ? 'Consumidor Final' : item.customer) : item.provider,
+      type === 'sales' ? item.rpNumber : item.poNumber,
+      `Q ${Number(item.total).toFixed(2)}`
+    ]);
+
+    // Add Table
+    autoTable(doc, {
+      startY: 50,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 51, 102], textColor: [255, 255, 255], fontStyle: 'bold' },
+      foot: [['', '', 'TOTAL', `Q ${stats.total.toFixed(2)}`]],
+      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 }
+    });
+
+    // Save PDF
+    doc.save(`reporte_${type}_${startDate}.pdf`);
+    toast.success('Reporte PDF generado correctamente');
+  };
+
   // Auto-fetch when type, startDate or endDate changes
   useEffect(() => {
     if (startDate && endDate) {
@@ -96,8 +152,18 @@ export default function ReportsPage() {
       );
 
       return matchBase || matchProducts;
-    });
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [reportData, searchTerm]);
+
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    paginatedItems,
+    handleChangePage,
+    handleChangeItemsPerPage
+  } = usePagination(filteredData, 10);
 
   const stats = useMemo(() => {
     const total = filteredData.reduce((acc, curr) => acc + Number(curr.total), 0);
@@ -113,7 +179,10 @@ export default function ReportsPage() {
           <h2 className="text-3xl font-black text-secondary dark:text-white tracking-tight">{t('reports.title')}</h2>
           <p className="text-slate-500 font-bold mt-1">{t('reports.subtitle')}</p>
         </div>
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 px-4 py-3 rounded-2xl border border-slate-200 dark:border-white/5 font-bold hover:bg-slate-200 transition-all active:scale-95">
+        <button 
+          onClick={handleExportPDF}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl shadow-lg shadow-primary/20 font-bold hover:bg-primary-dark transition-all active:scale-95"
+        >
           <Download size={18} />
           {t('reports.exportPdf')}
         </button>
@@ -232,7 +301,7 @@ export default function ReportsPage() {
 
           {/* Results Table Listing */}
           {filteredData.length > 0 ? (
-            <div className="border border-slate-100 dark:border-white/5 rounded-[2rem] overflow-hidden animate-in fade-in duration-700">
+            <div className="border border-slate-100 dark:border-white/5 rounded-[2rem] animate-in fade-in duration-700">
               <div className="bg-slate-50/50 dark:bg-black/20 px-8 py-5 border-b border-slate-100 dark:border-white/5">
                 <h3 className="font-black text-secondary dark:text-white uppercase text-xs tracking-[0.2em]">
                   {t('reports.results.title')} ({filteredData.length})
@@ -249,7 +318,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                    {filteredData.map((item) => (
+                    {paginatedItems.map((item) => (
                       <Fragment key={item.id}>
                         <tr 
                           onClick={() => toggleRow(item.id)}
@@ -277,8 +346,8 @@ export default function ReportsPage() {
                             </span>
                           </td>
                           <td className="px-8 py-5 text-center">
-                            <span className="text-slate-400 font-bold text-xs">
-                              {format(new Date(item.date), 'dd MMM, yyyy', { locale: language === 'es' ? es : enUS })}
+                            <span className="text-slate-400 font-bold text-xs whitespace-nowrap">
+                              {format(new Date(item.date), 'dd MMM yyyy, HH:mm', { locale: language === 'es' ? es : enUS })}
                             </span>
                           </td>
                           <td className="px-8 py-5 text-right">
@@ -340,6 +409,15 @@ export default function ReportsPage() {
                   </tbody>
                 </table>
               </div>
+              
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onChangePage={handleChangePage}
+                onChangeItemsPerPage={handleChangeItemsPerPage}
+              />
             </div>
           ) : (
             <div className="py-20 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-white/5 rounded-[2.5rem]">

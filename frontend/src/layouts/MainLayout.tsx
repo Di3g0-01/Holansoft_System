@@ -24,8 +24,9 @@ export default function MainLayout() {
 
   const navLinks = [
     { to: "/dashboard", icon: "dashboard", label: t('common.dashboard') },
+    { to: "/pos", icon: "point_of_sale", label: "POS" },
     { to: "/inventory", icon: "inventory_2", label: t('common.inventory') },
-    { to: "/sales", icon: "point_of_sale", label: t('common.sales') },
+    { to: "/sales", icon: "receipt_long", label: t('common.sales') },
     { to: "/purchases", icon: "shopping_cart", label: t('common.purchases') },
     { to: "/reports", icon: "bar_chart", label: t('common.reports'), category: "Analítica y Admin" },
     { to: "/users", icon: "group", label: t('common.users') },

@@ -15,6 +15,10 @@ import {
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import DashboardCharts from '../components/dashboard/DashboardCharts';
+import { toast } from 'sonner';
+import { Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface DashboardStats {
   products: number;
@@ -90,9 +94,67 @@ export default function DashboardPage() {
       setRecentActivity(combined);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor(40);
+    doc.text('Sistema HolanSoft', 14, 22);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text('Resumen Ejecutivo del Dashboard', 14, 30);
+    doc.text(`Fecha de Reporte: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 37);
+
+    // Stats Table
+    const statsColumns = ['Indicador', 'Valor Actual'];
+    const statsRows = [
+      [t('dashboard.stats.products'), stats.products],
+      [t('dashboard.stats.lowStock'), stats.lowStock],
+      [t('dashboard.stats.sales'), `Q ${stats.recentSales.toLocaleString()}`],
+      [t('dashboard.stats.purchases'), `Q ${stats.recentPurchases.toLocaleString()}`]
+    ];
+
+    autoTable(doc, {
+      startY: 50,
+      head: [statsColumns],
+      body: statsRows,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 51, 102], textColor: [255, 255, 255] },
+      styles: { fontSize: 10, cellPadding: 5 }
+    });
+
+    // Recent Activity Table
+    if (recentActivity.length > 0) {
+      doc.setFontSize(14);
+      doc.setTextColor(40);
+      const finalY = (doc as any).lastAutoTable.finalY || 100;
+      doc.text(t('dashboard.activity.title'), 14, finalY + 15);
+
+      const activityColumns = ['Tipo', 'ID', 'Fecha', 'Monto'];
+      const activityRows = recentActivity.map((a: any) => [
+        a.type === 'purchase' ? 'Compra' : 'Venta',
+        `#${a.id}`,
+        format(new Date(a.createdAt), 'dd/MM/yyyy HH:mm'),
+        `Q ${Number(a.total).toFixed(2)}`
+      ]);
+
+      autoTable(doc, {
+        startY: finalY + 20,
+        head: [activityColumns],
+        body: activityRows,
+        theme: 'grid',
+        headStyles: { fillColor: [51, 51, 51], textColor: [255, 255, 255] },
+        styles: { fontSize: 9 }
+      });
+    }
+
+    doc.save(`dashboard_resumen_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    toast.success('Resumen PDF generado correctamente');
   };
 
   useEffect(() => {
@@ -117,8 +179,11 @@ export default function DashboardPage() {
                 </div>
                 {t('common.update')}
             </button>
-            <button className="bg-secondary text-white font-black px-6 py-3 rounded-2xl shadow-secondary hover:translate-y-[-2px] active:scale-95 transition-all flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
+            <button 
+              onClick={handleExportPDF}
+              className="bg-secondary text-white font-black px-6 py-3 rounded-2xl shadow-secondary hover:translate-y-[-2px] active:scale-95 transition-all flex items-center gap-2"
+            >
+                <Download className="w-5 h-5" />
                 {t('common.export')}
             </button>
         </div>

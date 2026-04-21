@@ -8,6 +8,7 @@ import DashboardPage from './pages/Dashboard';
 import InventoryPage from './pages/Inventory';
 import PurchasesPage from './pages/Purchases';
 import SalesPage from './pages/Sales';
+import PosPage from './pages/Pos';
 import ReportsPage from './pages/Reports';
 import UsersPage from './pages/Users';
 import SettingsPage from './pages/Settings';
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="purchases" element={<PurchasesPage />} />
+            <Route path="pos" element={<PosPage />} />
             <Route path="sales" element={<SalesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="users" element={<UsersPage />} />
