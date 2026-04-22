@@ -1,31 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, ShoppingBag, Trash2, Plus, Minus, Check, Save } from 'lucide-react';
+import { X, Search, Trash2, Plus, Save } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import api from '../../lib/api';
 import { toast } from 'sonner';
 import InputDialog from '../ui/InputDialog';
 import CustomSelect from '../ui/CustomSelect';
-import type { Product, Category } from '../../types';
+import type { Product } from '../../types';
 
 interface AddPurchaseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
-
-interface NewProductForm {
-  code: string;
-  nombre: string;
-  brand: string;
-  size: string;
-  type: string;
-  categoryId: string;
-  priceUnit: string | number;
-  priceDozen: string | number;
-  priceWholesale: string | number;
-  alertQuantity: string | number;
-}
-
 
 interface PurchaseCartItem {
   productId: number;
@@ -50,34 +36,6 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
   const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
 
   const { t } = useLanguage();
-  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
-
-  const [newProduct, setNewProduct] = useState<NewProductForm>({
-    code: '',
-    nombre: '',
-    brand: '',
-    size: '',
-    type: '',
-    categoryId: '',
-    priceUnit: '',
-    priceDozen: '',
-    priceWholesale: '',
-    alertQuantity: '5'
-  });
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get('/categories');
-      setCategories(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -90,30 +48,6 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
-
-  const handleQuickCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await api.post('/products', {
-        code: newProduct.code,
-        nombre: newProduct.nombre,
-        marca: newProduct.brand,
-        tamano: newProduct.size,
-        tipo: newProduct.type,
-        categoryId: newProduct.categoryId ? Number(newProduct.categoryId) : null,
-        precio_unidad: Number(newProduct.priceUnit),
-        precio_docena: Number(newProduct.priceDozen),
-        precio_mayoreo: Number(newProduct.priceWholesale),
-        cantidad: 0
-      });
-      addToCart(res.data);
-      setIsQuickCreateOpen(false);
-      setNewProduct({ code: '', nombre: '', brand: '', size: '', type: '', categoryId: '', priceUnit: '', priceDozen: '', priceWholesale: '', alertQuantity: '5' });
-      toast.success(t('inventory.form.success') || 'Producto creado y agregado a la compra');
-    } catch (err) {
-      toast.error(t('inventory.form.savingError') || 'Error al crear el producto');
-    }
-  };
 
   const searchProducts = async () => {
     try {
@@ -152,10 +86,6 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
 
   const updateCost = (productId: number, cost: number) => {
     setCart(cart.map((item: PurchaseCartItem) => item.productId === productId ? { ...item, cost } : item));
-  };
-
-  const updatePriceField = (productId: number, field: string, value: number) => {
-    setCart(cart.map((item: PurchaseCartItem) => item.productId === productId ? { ...item, [field]: value } : item));
   };
 
   const removeFromCart = (productId: number) => {

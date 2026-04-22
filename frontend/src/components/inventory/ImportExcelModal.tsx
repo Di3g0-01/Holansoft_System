@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Check, AlertCircle, Save, Download, FilePlus } from 'lucide-react';
+import { X, Upload, Check, Download, FilePlus } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import * as XLSX from 'xlsx';
 import api from '../../lib/api';
@@ -26,7 +26,6 @@ interface ParsedProduct {
 }
 
 export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportExcelModalProps) {
-  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedProduct[]>([]);
