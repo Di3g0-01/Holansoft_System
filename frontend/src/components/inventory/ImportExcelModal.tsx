@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { X, Upload, Check, Download, FilePlus } from 'lucide-react';
-import { useLanguage } from '../../contexts/LanguageContext';
 import * as XLSX from 'xlsx';
 import api from '../../lib/api';
 import { toast } from 'sonner';
