@@ -56,7 +56,7 @@ export default function PosPage() {
   });
 
   const addToCart = (product: Product) => {
-    if (product.cantidad < 1) {
+    if (Number(product.cantidad) < 1) {
       toast.error('Producto sin stock disponible');
       return;
     }
@@ -68,11 +68,11 @@ export default function PosPage() {
         productId: product.id_producto,
         name: product.nombre,
         quantity: 1,
-        price: product.precio_unidad,
-        stock: product.cantidad,
-        precio_unidad: product.precio_unidad,
-        precio_docena: product.precio_docena,
-        precio_mayoreo: product.precio_mayoreo,
+        price: Number(product.precio_unidad) || 0,
+        stock: Number(product.cantidad) || 0,
+        precio_unidad: Number(product.precio_unidad) || 0,
+        precio_docena: Number(product.precio_docena) || 0,
+        precio_mayoreo: Number(product.precio_mayoreo) || 0,
         categoryName: product.category?.name,
         code: product.code
       };
@@ -91,9 +91,9 @@ export default function PosPage() {
         }
 
         // Automatic Pricing Engine
-        let price = item.precio_unidad;
-        if (newQty >= 50) price = item.precio_mayoreo;
-        else if (newQty >= 12) price = item.precio_docena;
+        let price = Number(item.precio_unidad);
+        if (newQty >= 50) price = Number(item.precio_mayoreo);
+        else if (newQty >= 12) price = Number(item.precio_docena);
 
         return { ...item, quantity: newQty, price };
       }
@@ -259,7 +259,7 @@ export default function PosPage() {
                     <span className="bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded text-[10px] font-black mr-2">
                       {item.quantity < 12 ? 'U' : item.quantity < 50 ? 'D' : 'M'}
                     </span>
-                    <span className="text-xs text-gray-500 font-bold">Q{item.price.toFixed(2)}</span>
+                    <span className="text-xs text-gray-500 font-bold">Q{Number(item.price).toFixed(2)}</span>
                   </div>
                   
                   <div className="flex items-center border border-gray-200 dark:border-white/10 rounded-lg">
@@ -284,7 +284,7 @@ export default function PosPage() {
                   </div>
 
                   <span className="font-black text-secondary dark:text-white text-base">
-                    Q{(item.quantity * item.price).toFixed(2)}
+                    Q{(item.quantity * Number(item.price)).toFixed(2)}
                   </span>
                 </div>
               </div>
