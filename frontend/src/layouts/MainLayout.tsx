@@ -159,7 +159,7 @@ export default function MainLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 relative">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-6 relative">
           <Outlet />
         </div>
       </main>

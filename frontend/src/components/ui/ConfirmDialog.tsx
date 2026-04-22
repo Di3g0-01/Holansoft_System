@@ -56,39 +56,39 @@ export default function ConfirmDialog({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div className="relative bg-white dark:bg-surface-dark rounded-[1.5rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200 overflow-hidden">
         {/* Header */}
-        <div className="p-8 pb-0 flex items-start justify-between gap-4">
+        <div className="p-6 sm:p-8 pb-0 flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-4 rounded-2xl ${colors.icon}`}>
+            <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${colors.icon} shrink-0`}>
               <AlertTriangle size={24} />
             </div>
-            <h3 className="text-xl font-black text-secondary leading-tight">{title}</h3>
+            <h3 className="text-lg sm:text-xl font-black text-secondary dark:text-white leading-tight">{title}</h3>
           </div>
           <button
             onClick={onCancel}
-            className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all flex-shrink-0 mt-1"
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 transition-all flex-shrink-0 mt-1"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Body */}
-        <p className="px-8 py-5 text-slate-500 font-medium text-sm leading-relaxed">
+        <p className="px-6 sm:px-8 py-4 sm:py-5 text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
           {message}
         </p>
 
         {/* Footer */}
-        <div className="px-8 pb-8 flex gap-3">
+        <div className="px-6 sm:px-8 pb-6 sm:pb-8 flex flex-col sm:flex-row gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 bg-slate-100 hover:bg-slate-200 text-secondary font-black py-4 rounded-2xl transition-all active:scale-95"
+            className="order-2 sm:order-1 flex-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-secondary dark:text-white font-black py-3.5 sm:py-4 rounded-xl sm:rounded-2xl transition-all active:scale-95"
           >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
-            className={`flex-1 ${colors.btn} text-white font-black py-4 rounded-2xl shadow-lg transition-all active:scale-95`}
+            className={`order-1 sm:order-2 flex-1 ${colors.btn} text-white font-black py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-lg transition-all active:scale-95`}
           >
             {confirmLabel}
           </button>

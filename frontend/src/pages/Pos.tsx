@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Plus, Minus, X, Trash2, Printer } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import InputDialog from '../components/ui/InputDialog';
@@ -31,6 +32,7 @@ export default function PosPage() {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchProducts();
@@ -154,60 +156,69 @@ export default function PosPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-theme(spacing.24))] overflow-hidden -m-2 p-2">
+    <div className="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100vh-theme(spacing.24))] overflow-hidden -m-2 p-2">
       
       {/* Left Area: Product Search and Grid */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden min-h-[400px]">
         <div className="p-4 border-b border-gray-100 dark:border-white/5 space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">POS</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Punto de Venta</h2>
           </div>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input 
               autoFocus
               type="text" 
-              placeholder="Buscar por código, nombre o categoría..." 
-              className="w-full pl-12 pr-4 py-4 border border-gray-200 dark:border-white/10 focus:border-primary/50 bg-white dark:bg-black/20 rounded-2xl outline-none text-lg font-bold text-secondary dark:text-white shadow-sm transition-all"
+              placeholder="Código o nombre..." 
+              className="w-full pl-12 pr-4 py-3 sm:py-4 border border-gray-200 dark:border-white/10 focus:border-primary/50 bg-white dark:bg-black/20 rounded-2xl outline-none text-base sm:text-lg font-bold text-secondary dark:text-white shadow-sm transition-all"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* DataGrid Header */}
-        <div className="px-6 py-3 bg-gray-50 dark:bg-black/20 border-b border-gray-100 dark:border-white/5 flex text-xs font-bold text-gray-400 uppercase tracking-wider">
-          <div className="w-1/6">CÓDIGO</div>
-          <div className="w-2/6">NOMBRE DEL PRODUCTO</div>
-          <div className="w-1/6">CATEGORÍA</div>
-          <div className="w-1/12 text-center">STOCK</div>
-          <div className="w-1/12 text-right">P/U</div>
-          <div className="w-1/12 text-right">P/Doc</div>
-          <div className="w-1/12 text-right">P/May</div>
-        </div>
 
-        {/* Products List Scrollable */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2">
-          {filteredProducts.map(product => (
-            <div 
-              key={product.id_producto}
-              onClick={() => addToCart(product)}
-              className="flex px-4 py-4 mb-2 bg-white dark:bg-black/10 border border-transparent hover:border-primary/30 rounded-xl transition-all items-center text-sm cursor-pointer group"
-            >
-              <div className="w-1/6 font-mono font-bold text-gray-400">{product.code}</div>
-              <div className="w-2/6 font-black text-secondary dark:text-white">{product.nombre}</div>
-              <div className="w-1/6 text-gray-500 font-medium">{product.category?.name || '-'}</div>
-              <div className={`w-1/12 text-center font-black ${product.cantidad <= (product.alerta_cantidad||5) ? 'text-red-500' : 'text-green-500'}`}>{product.cantidad}</div>
-              <div className="w-1/12 text-right font-bold text-gray-700 dark:text-gray-300">Q{Number(product.precio_unidad).toFixed(2)}</div>
-              <div className="w-1/12 text-right font-bold text-gray-600 dark:text-gray-400">Q{Number(product.precio_docena).toFixed(2)}</div>
-              <div className="w-1/12 text-right font-bold text-gray-600 dark:text-gray-400">Q{Number(product.precio_mayoreo).toFixed(2)}</div>
+        {/* Products List Scrollable Table */}
+        <div className="flex-1 overflow-x-auto">
+          <div className="min-w-[400px] h-full flex flex-col">
+            {/* Table Header */}
+            <div className="flex px-4 py-2 bg-slate-50 dark:bg-black/20 border-b border-slate-100 dark:border-white/5 text-[9px] font-black text-slate-400 uppercase tracking-widest shrink-0">
+              <div className="w-16 shrink-0">{t('inventory.table.code')}</div>
+              <div className="flex-1">{t('inventory.table.name')}</div>
+              <div className="w-20 text-right shrink-0">{t('common.price')}</div>
             </div>
-          ))}
-          {filteredProducts.length === 0 && (
-            <div className="p-8 text-center text-gray-400 font-bold">
-              No se encontraron productos.
+
+            {/* Table Body */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-50 dark:divide-white/5">
+              {filteredProducts.map(product => (
+                <div 
+                  key={product.id_producto}
+                  onClick={() => addToCart(product)}
+                  className="flex items-center px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group"
+                >
+                  <div className="w-16 shrink-0 font-mono text-[9px] font-black text-slate-400 truncate pr-2">
+                    {product.code}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-black text-secondary dark:text-white truncate leading-tight uppercase">
+                      {product.nombre}
+                    </p>
+                  </div>
+                  <div className="w-20 shrink-0 text-right">
+                    <p className="text-[10px] font-black text-primary">
+                      Q {Number(product.precio_unidad).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              
+              {filteredProducts.length === 0 && (
+                <div className="p-8 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">
+                  {t('sales.noResults')}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

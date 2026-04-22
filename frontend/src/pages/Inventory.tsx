@@ -153,8 +153,8 @@ export default function InventoryPage() {
             />
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-             <div className="w-[200px]">
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+             <div className="w-full sm:w-[200px]">
                 <CustomSelect 
                   value={selectedCategory}
                   onChange={(val) => setSelectedCategory(val)}
@@ -165,29 +165,31 @@ export default function InventoryPage() {
                 />
              </div>
 
-             <button 
-                onClick={() => setShowLowStockOnly(!showLowStockOnly)}
-                className={`py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 transition-colors ${showLowStockOnly ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-50 text-slate-600 dark:bg-black/20 dark:text-slate-300'}`}
-              >
-                <AlertTriangle size={16} />
-                Bajo Stock
-             </button>
+             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+               <button 
+                  onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+                  className={`flex-1 sm:flex-none py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center justify-center gap-2 transition-colors ${showLowStockOnly ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-slate-50 text-slate-600 dark:bg-black/20 dark:text-slate-300'}`}
+                >
+                  <AlertTriangle size={16} />
+                  Bajo Stock
+               </button>
 
-             <button 
-                onClick={() => setIsImportModalOpen(true)}
-                className="py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
-              >
-                <Upload size={16} />
-                Importar
-             </button>
+               <button 
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="flex-1 sm:flex-none py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
+                >
+                  <Upload size={16} />
+                  Importar
+               </button>
 
-             <button 
-                onClick={handleExport}
-                className="py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
-              >
-                <Download size={16} />
-                Exportar
-             </button>
+               <button 
+                  onClick={handleExport}
+                  className="flex-1 sm:flex-none py-3 px-4 rounded-[1.2rem] text-sm font-bold flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 dark:bg-black/20 dark:hover:bg-black/40 dark:text-slate-300 transition-colors"
+                >
+                  <Download size={16} />
+                  Exportar
+               </button>
+             </div>
           </div>
         </div>
 
@@ -246,8 +248,8 @@ export default function InventoryPage() {
                     <td className="px-6 py-5">
                       <span className="text-slate-400 font-bold">{product.category?.name || '-'}</span>
                     </td>
-                    <td className="px-6 py-5 text-right font-black text-secondary dark:text-white whitespace-nowrap">
-                      Q {Number(product.precio_unidad || 0).toFixed(2)}
+                    <td className="px-6 py-5 text-right font-black text-secondary dark:text-white whitespace-nowrap text-xs">
+                      Q {Math.floor(product.precio_unidad || 0).toLocaleString()}
                     </td>
                     <td className="px-6 py-5 text-center">
                       <span className={`inline-flex items-center justify-center w-10 h-10 rounded-xl font-black ${(product.cantidad || 0) <= (product.alerta_cantidad || 0) ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-700'}`}>
@@ -256,19 +258,19 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-5 text-center">
                       {(product.cantidad || 0) <= (product.alerta_cantidad || 0) ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black bg-red-100 text-red-700 uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black bg-red-100 text-red-700 uppercase tracking-tight">
+                          <span className="w-1 h-1 rounded-full bg-red-600 animate-pulse shrink-0"></span>
                           {t('common.status.lowStock')}
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black bg-green-100 text-green-700 uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black bg-green-100 text-green-700 uppercase tracking-tight">
+                          <span className="w-1 h-1 rounded-full bg-green-600 shrink-0"></span>
                           {t('common.status.optimal')}
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-1 sm:gap-2">
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();

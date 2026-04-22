@@ -104,7 +104,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
         precio_unidad: Number(newProduct.priceUnit),
         precio_docena: Number(newProduct.priceDozen),
         precio_mayoreo: Number(newProduct.priceWholesale),
-        cantidad: 0 // Initial stock is 0, will be updated by the purchase
+        cantidad: 0
       });
       addToCart(res.data);
       setIsQuickCreateOpen(false);
@@ -128,7 +128,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     const existing = cart.find(item => item.productId === product.id_producto);
     if (existing) {
       updateQuantity(product.id_producto, existing.quantity + 1);
-      } else {
+    } else {
       const newItem: PurchaseCartItem = {
         productId: product.id_producto,
         name: product.nombre,
@@ -173,11 +173,11 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       return;
     }
     if (!selectedProvider.trim()) {
-      toast.error(t('purchases.providerError') || 'Seleccione un proveedor proveedor');
+      toast.error(t('purchases.providerError') || 'Seleccione un proveedor');
       return;
     }
     if (cart.some((item: PurchaseCartItem) => item.quantity < 1)) {
-      toast.error(t('purchases.invalidQuantity') || 'La cantidad no puede estar vacía o ser 0 en ninguno de los productos');
+      toast.error(t('purchases.invalidQuantity') || 'La cantidad no puede estar vacía o ser 0');
       return;
     }
     setLoading(true);
@@ -210,333 +210,166 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
     }
   };
 
-  const renderConversion = (qty: number) => {
-    const dozens = Math.floor(qty / 12);
-    const wholesale = Math.floor(qty / 50);
-    return (
-      <div className="bg-secondary p-4 rounded-2xl text-white text-xs space-y-2 animate-in fade-in zoom-in duration-200">
-        <div className="flex justify-between border-b border-white/10 pb-1">
-          <span>{t('purchases.currentUnits') || 'Unidades actuales'}:</span>
-          <span className="font-black">{qty}</span>
-        </div>
-        <div className="flex justify-between border-b border-white/10 pb-1">
-          <span>{t('inventory.form.dozen')}:</span>
-          <span className="font-black">{dozens}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>{t('inventory.form.wholesale')} (50s):</span>
-          <span className="font-black">{wholesale}</span>
-        </div>
-      </div>
-    );
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-secondary/80 backdrop-blur-md" onClick={onClose} />
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-[#F3F4F6] dark:bg-surface-dark w-full max-w-5xl h-[95vh] sm:h-[90vh] rounded-t-[2.5rem] sm:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 transition-all">
+      <div className="relative bg-[#fafaf9] dark:bg-surface-dark w-full max-w-5xl max-h-[90vh] rounded-[2rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="bg-[#1e293b] p-4 sm:p-8 text-white flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl">
-              <ShoppingBag size={24} className="sm:w-8 sm:h-8" />
-            </div>
-            <div>
-              <h3 className="text-xl sm:text-3xl font-black tracking-tight">{t('purchases.title')}</h3>
-              <p className="text-white/60 text-[10px] sm:text-sm font-bold">{t('purchases.newPurchaseSubtitle')}</p>
-            </div>
+        <div className="bg-[#0f172a] p-6 text-white flex items-center justify-between shrink-0">
+          <div>
+            <h3 className="text-xl font-bold tracking-tight">{t('purchases.title')}</h3>
+            <p className="text-slate-400 text-xs font-medium">{t('purchases.newPurchaseSubtitle')}</p>
           </div>
-          <button onClick={onClose} className="hover:bg-white/10 p-2 sm:p-3 rounded-xl sm:rounded-2xl transition-all">
-            <X size={24} className="sm:w-8 sm:h-8" />
+          <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-lg transition-colors">
+            <X size={20} />
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* Left Side: Search */}
-          <div className="w-full lg:w-1/2 p-4 sm:p-8 border-b lg:border-r lg:border-b-0 border-gray-200 dark:border-white/5 flex flex-col gap-4 sm:gap-6 overflow-y-auto max-h-[40vh] lg:max-h-full">
-            <div className="space-y-3">
-              <label className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] ml-2">{t('purchases.searchProductTitle')}</label>
-              <div className="relative">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={24} />
-                <input 
-                  autoFocus
-                  type="text"
-                  placeholder={t('purchases.searchPlaceholder')}
-                  className="w-full bg-white dark:bg-black/20 border-none rounded-[1.5rem] py-5 pl-14 pr-6 text-xl font-bold text-secondary dark:text-white shadow-sm focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
+          {/* Provider Section */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t('purchases.providerLabel')}</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <CustomSelect
+                  options={providers.map(p => ({ value: p, label: p }))}
+                  value={selectedProvider}
+                  onChange={val => setSelectedProvider(val)}
                 />
               </div>
-            </div>
-
-            {/* Results or Quick Create */}
-            <div className="grid grid-cols-1 gap-4">
-              {searchResults.length > 0 ? (
-                searchResults.map((product: Product) => (
-                  <div 
-                    key={product.id_producto}
-                    className="bg-white dark:bg-white/5 p-6 rounded-[2rem] border border-transparent hover:border-blue-500/30 hover:shadow-xl transition-all cursor-pointer group relative"
-                    onClick={() => addToCart(product)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{product.code}</span>
-                        <h4 className="text-xl font-black text-secondary dark:text-white">{product.nombre}</h4>
-                      </div>
-                      <div className="text-right">
-                        <div className="px-4 py-1 rounded-full text-[10px] font-black uppercase bg-slate-100 text-slate-500">
-                          {t('common.stock')}: {product.cantidad}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : searchTerm.length > 1 && (
-                <div className="bg-blue-50 dark:bg-blue-900/10 p-8 rounded-[2.5rem] border-2 border-dashed border-blue-200 dark:border-blue-500/20 text-center space-y-4">
-                  <Plus className="mx-auto text-blue-500" size={48} />
-                  <p className="text-blue-900 dark:text-blue-300 font-bold">{t('sales.noResults')} "{searchTerm}"</p>
-                  <button 
-                    onClick={() => {
-                      setNewProduct({ ...newProduct, nombre: searchTerm });
-                      setIsQuickCreateOpen(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black transition-all active:scale-95"
-                  >
-                    {t('purchases.quickCreateProduct')}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Create Modal Interior */}
-            {isQuickCreateOpen && (
-              <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
-                <div className="absolute inset-0 bg-secondary/60 backdrop-blur-sm" onClick={() => setIsQuickCreateOpen(false)} />
-                <div className="relative bg-white dark:bg-surface-dark w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                  <div className="bg-[#003366] p-8 text-white flex items-center justify-between">
-                    <div>
-                      <h3 className="text-2xl font-black tracking-tight">{t('purchases.quickCreateProduct')}</h3>
-                      <p className="text-white/60 text-sm font-bold">{t('purchases.enterDetails')}</p>
-                    </div>
-                    <button onClick={() => setIsQuickCreateOpen(false)} className="hover:bg-white/10 p-2 rounded-xl transition-colors">
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleQuickCreate} className="p-6 sm:p-8 space-y-6 max-h-[70vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.code')}</label>
-                        <input required type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.code} onChange={e => setNewProduct({...newProduct, code: e.target.value})} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.name')}</label>
-                        <input required type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.nombre} onChange={e => setNewProduct({...newProduct, nombre: e.target.value})} />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.brand') || 'Marca'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.brand} onChange={e => setNewProduct({...newProduct, brand: e.target.value})} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.size') || 'Tamaño'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.size} onChange={e => setNewProduct({...newProduct, size: e.target.value})} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.form.type') || 'Tipo'}</label>
-                        <input type="text" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none" value={newProduct.type} onChange={e => setNewProduct({...newProduct, type: e.target.value})} />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('inventory.table.category')}</label>
-                        <CustomSelect
-                          options={[
-                            { value: '', label: t('inventory.form.selectCategory') || 'Seleccionar...' },
-                            ...categories.map((cat: Category) => ({ value: String(cat.id), label: (cat.nombre || cat.name || '') as string }))
-                          ]}
-                          value={newProduct.categoryId}
-                          onChange={(val) => setNewProduct({ ...newProduct, categoryId: val })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-secondary/50 uppercase tracking-[0.2em] ml-2">{t('purchases.stockAlert')}</label>
-                        <input required type="number" className="w-full bg-[#FFF5F0] border-none rounded-2xl p-4 text-secondary font-bold outline-none focus:ring-2 focus:ring-primary/20" value={newProduct.alertQuantity} onChange={e => setNewProduct({...newProduct, alertQuantity: e.target.value})} />
-                      </div>
-                    </div>
-
-                    <div className="bg-[#FFF5F0] rounded-[2rem] p-6 space-y-4">
-                      <div className="flex items-center gap-2 text-secondary/60 ml-2">
-                        <Check size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{t('purchases.priceSchema')}</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('purchases.unitary')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceUnit} onChange={e => setNewProduct({...newProduct, priceUnit: e.target.value})} />
-
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.dozen')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceDozen} onChange={e => setNewProduct({...newProduct, priceDozen: e.target.value})} />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.wholesale')}</label>
-                          <input required type="number" step="0.01" className="w-full bg-white border-none rounded-xl p-3 text-secondary font-bold outline-none" value={newProduct.priceWholesale} onChange={e => setNewProduct({...newProduct, priceWholesale: e.target.value})} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4 pt-4">
-                      <button type="button" onClick={() => setIsQuickCreateOpen(false)} className="text-secondary font-black text-sm px-6">{t('common.cancel')}</button>
-                      <button type="submit" className="bg-primary hover:bg-primary-dark text-white font-black px-8 py-4 rounded-2xl shadow-primary transition-all">{t('inventory.form.save')}</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Side: Cart */}
-          <div className="flex-1 bg-white dark:bg-black/5 p-4 sm:p-8 flex flex-col gap-4 sm:gap-6 overflow-hidden">
-            <div className="space-y-3 shrink-0">
-              <label className="text-xs font-black text-secondary/40 uppercase tracking-[0.2em] ml-2">{t('purchases.providerLabel')}</label>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <CustomSelect
-                    options={providers.map(p => ({ value: p, label: p }))}
-                    value={selectedProvider}
-                    onChange={val => setSelectedProvider(val)}
-                  />
-                </div>
-                <button 
-                  onClick={() => setIsProviderModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-2xl shadow-sm transition-transform active:scale-95"
-                >
-                  <Plus size={24} />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-              {cart.length > 0 ? (
-                cart.map((item: any) => (
-                  <div key={item.productId} className="bg-white dark:bg-white/5 p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
-                      <h5 className="font-black text-secondary dark:text-white text-lg">{item.name}</h5>
-                      <button onClick={() => removeFromCart(item.productId)} className="text-slate-300 hover:text-red-500"><Trash2 size={20} /></button>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.unitCost')}</label>
-                        <input 
-                          type="number"
-                          className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-xl p-3 font-bold text-secondary outline-none"
-                          value={item.cost === 0 ? '' : item.cost}
-                          onChange={e => {
-                            const val = e.target.value;
-                            updateCost(item.productId, val === '' ? 0 : Number(val));
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('common.quantity')}</label>
-                        <div className="flex items-center bg-slate-50 dark:bg-black/20 rounded-xl px-2">
-                          <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors"><Minus size={14} /></button>
-                          <input 
-                            type="number" 
-                            className="w-20 bg-transparent border-none text-center font-black text-secondary dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            value={item.quantity === 0 ? '' : item.quantity}
-                            onChange={e => {
-                              const val = e.target.value;
-                              updateQuantity(item.productId, val === '' ? 0 : Number(val));
-                            }}
-                            min="1"
-                          />
-                          <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors"><Plus size={14} /></button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Selling Prices Updates */}
-                    <div className="bg-slate-50 dark:bg-black/10 p-4 rounded-2xl space-y-3">
-                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('purchases.updateSellingPrices')}</p>
-                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Uni. <span className="text-[10px]">Q</span></label>
-                            <input 
-                              type="number" 
-                              step="0.01"
-                              className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-xs font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20" 
-                              value={item.precio_unidad === 0 ? '' : item.precio_unidad} 
-                              onChange={e => {
-                                const val = e.target.value;
-                                updatePriceField(item.productId, 'precio_unidad', val === '' ? 0 : Number(val));
-                              }} 
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">Doc. <span className="text-[10px]">Q</span></label>
-                            <input 
-                              type="number" 
-                              step="0.01"
-                              className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-xs font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20" 
-                              value={item.precio_docena === 0 ? '' : item.precio_docena} 
-                              onChange={e => {
-                                const val = e.target.value;
-                                updatePriceField(item.productId, 'precio_docena', val === '' ? 0 : Number(val));
-                              }} 
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1">May. <span className="text-[10px]">Q</span></label>
-                            <input 
-                              type="number" 
-                              step="0.01"
-                              className="w-full bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-lg p-2 text-xs font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20" 
-                              value={item.precio_mayoreo === 0 ? '' : item.precio_mayoreo} 
-                              onChange={e => {
-                                const val = e.target.value;
-                                updatePriceField(item.productId, 'precio_mayoreo', val === '' ? 0 : Number(val));
-                              }} 
-                            />
-                          </div>
-                       </div>
-                    </div>
-                    {/* Conversion Helper */}
-                    <div className="mt-2">
-                       {renderConversion(item.quantity)}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-4 opacity-50">
-                  <ShoppingBag size={80} strokeWidth={1} />
-                  <p className="font-black text-lg uppercase tracking-widest">{t('purchases.emptyCart') || 'Ingrese su Pedido'}</p>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-slate-900 p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] text-white shadow-xl shrink-0 mt-auto">
-              <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <span className="text-xs font-black uppercase tracking-widest opacity-60">{t('common.total')}</span>
-                <span className="text-2xl sm:text-4xl font-black">Q {calculateTotal().toFixed(2)}</span>
-              </div>
               <button 
-                disabled={loading || cart.length === 0}
-                onClick={handleSubmit}
-                className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 py-4 sm:py-6 rounded-2xl font-black text-lg sm:text-xl flex items-center justify-center gap-3 transition-all"
+                onClick={() => setIsProviderModalOpen(true)}
+                className="bg-[#f97316] hover:bg-[#ea580c] text-white p-3 sm:p-3.5 rounded-xl shadow-sm transition-transform active:scale-95 shrink-0"
               >
-                {loading ? t('common.loading') : <><Save size={24} className="sm:w-7 sm:h-7" /> {t('purchases.confirmPurchase')}</>}
+                <Plus size={20} />
               </button>
             </div>
           </div>
+
+          {/* Search Section */}
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">{t('purchases.searchProductTitle')}</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text"
+                placeholder={t('purchases.searchPlaceholder')}
+                className="w-full bg-[#fff7ed] dark:bg-black/20 border-none rounded-xl py-3.5 sm:py-4 pl-12 pr-6 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/20"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+              
+              {/* Search Results Dropdown */}
+              {searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-slate-100 dark:border-white/5 z-50 overflow-hidden max-h-60 overflow-y-auto">
+                  {searchResults.map((product) => (
+                    <div 
+                      key={product.id_producto}
+                      onClick={() => addToCart(product)}
+                      className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center transition-colors"
+                    >
+                      <div className="min-w-0 pr-4">
+                        <p className="font-bold text-slate-700 dark:text-white truncate">{product.nombre}</p>
+                        <p className="text-[10px] text-slate-400 font-black">{product.code}</p>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 shrink-0">Stock: {product.cantidad}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Cart Table with horizontal scroll on mobile */}
+          <div className="bg-white dark:bg-black/10 rounded-2xl border border-slate-100 dark:border-white/5 overflow-hidden flex flex-col">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs min-w-[600px] sm:min-w-full">
+                <thead className="bg-[#fff7ed] dark:bg-white/5 text-slate-500 font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-4">{t('inventory.table.code')}</th>
+                    <th className="px-4 sm:px-6 py-4">{t('inventory.table.name')}</th>
+                    <th className="px-4 sm:px-6 py-4 text-center">{t('common.quantity')}</th>
+                    <th className="px-4 sm:px-6 py-4 text-center">{t('purchases.unitCost')}</th>
+                    <th className="px-4 sm:px-6 py-4 text-right">{t('reports.table.total')}</th>
+                    <th className="px-4 sm:px-6 py-4 w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                  {cart.map((item) => (
+                    <tr key={item.productId} className="group">
+                      <td className="px-4 sm:px-6 py-4 font-mono text-slate-400 text-[10px]">{item.productId}</td>
+                      <td className="px-4 sm:px-6 py-4 font-bold text-slate-700 dark:text-white max-w-[150px] sm:max-w-none truncate">{item.name}</td>
+                      <td className="px-4 sm:px-6 py-4">
+                        <div className="flex items-center justify-center">
+                          <input 
+                            type="number"
+                            className="w-16 sm:w-20 bg-slate-50 dark:bg-black/20 border-none rounded-lg p-2 text-center font-bold text-slate-700 dark:text-white outline-none text-xs"
+                            value={item.quantity}
+                            onChange={e => updateQuantity(item.productId, Number(e.target.value))}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4">
+                        <div className="flex items-center justify-center gap-1 sm:gap-2">
+                          <span className="text-slate-400 font-bold">Q</span>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            className="w-20 sm:w-24 bg-slate-50 dark:bg-black/20 border-none rounded-lg p-2 font-bold text-slate-700 dark:text-white outline-none text-xs"
+                            value={item.cost || ''}
+                            onChange={e => updateCost(item.productId, Number(e.target.value))}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 text-right font-black text-[#f97316] text-sm sm:text-xs">
+                        Q {(item.quantity * item.cost).toLocaleString('es-GT', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4">
+                        <button onClick={() => removeFromCart(item.productId)} className="text-slate-300 hover:text-red-500 transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {cart.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-medium">
+                        {t('purchases.emptyCart') || 'No hay productos en la compra'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Table Footer / Summary */}
+            {cart.length > 0 && (
+              <div className="p-4 sm:p-6 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-white/5 flex justify-end items-center gap-4 sm:gap-8">
+                <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">TOTAL COMPRA</span>
+                <span className="text-xl sm:text-2xl font-black text-[#0f172a] dark:text-white">Q {calculateTotal().toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-surface-dark flex justify-end items-center gap-4 shrink-0">
+          <button 
+            onClick={onClose}
+            className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            {t('common.cancel')}
+          </button>
+          <button 
+            disabled={loading || cart.length === 0}
+            onClick={handleSubmit}
+            className="bg-[#f97316] hover:bg-[#ea580c] text-white px-8 py-3.5 rounded-xl shadow-lg shadow-orange-500/20 font-black text-sm flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? <span className="animate-spin text-lg">⏳</span> : <><Save size={18} /> {t('purchases.confirmPurchase')}</>}
+          </button>
         </div>
       </div>
 
@@ -551,7 +384,6 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
         }}
         onCancel={() => setIsProviderModalOpen(false)}
       />
-
     </div>
   );
 }

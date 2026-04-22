@@ -156,7 +156,7 @@ export default function UsersPage() {
                       </td>
                       <td className="px-8 py-6 text-slate-400 font-bold">{format(new Date(user.createdAt), 'dd MMM, yyyy')}</td>
                       <td className="px-8 py-6 text-right">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-end gap-2">
                           <button 
                             onClick={() => handleEdit(user)}
                             className="p-3 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"

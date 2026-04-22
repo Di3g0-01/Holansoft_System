@@ -189,26 +189,26 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
-          <div className="bg-primary/10 w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-primary font-black text-xl">Q</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-surface-dark p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
+          <div className="bg-primary/10 w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-primary font-black text-xl">Q</div>
           <div className="min-w-0 overflow-hidden">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.totalIncome')}</p>
-            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.total.toLocaleString()}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.totalIncome')}</p>
+            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {Math.floor(stats.total).toLocaleString()}</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
-          <div className="bg-blue-500/10 p-4 rounded-2xl text-blue-500 flex-shrink-0"><TrendingUp size={24} /></div>
+        <div className="bg-white dark:bg-surface-dark p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
+          <div className="bg-blue-500/10 p-3 sm:p-4 rounded-2xl text-blue-500 flex-shrink-0"><TrendingUp size={24} /></div>
           <div className="min-w-0 overflow-hidden">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.movements')}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.movements')}</p>
             <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">{stats.count} {t('reports.stats.registries')}</p>
           </div>
         </div>
-        <div className="bg-white dark:bg-surface-dark p-6 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0">
-          <div className="bg-slate-500/10 w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-slate-500 font-black text-xl">Q</div>
+        <div className="bg-white dark:bg-surface-dark p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center gap-4 min-w-0 sm:col-span-2 lg:col-span-1">
+          <div className="bg-slate-500/10 w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 flex items-center justify-center rounded-2xl text-slate-500 font-black text-xl">Q</div>
           <div className="min-w-0 overflow-hidden">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.avgPerTrans')}</p>
-            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.avg.toFixed(2)}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">{t('reports.stats.avgPerTrans')}</p>
+            <p className="text-xl sm:text-2xl font-black text-secondary dark:text-white whitespace-nowrap overflow-hidden text-ellipsis">Q {Math.floor(stats.avg).toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -216,87 +216,84 @@ export default function ReportsPage() {
       <div className="bg-white dark:bg-surface-dark rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/5 overflow-hidden">
         <div className="p-8 space-y-8">
           {/* Controls Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
-            <div className="space-y-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
-                <Filter size={14} /> {t('reports.filters.title')}
-              </label>
-              <div className="bg-slate-50 dark:bg-black/20 p-1.5 rounded-2xl flex gap-1">
-                {(['day', 'week', 'range'] as const).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => applyFilter(m)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${
-                      filterMode === m 
-                        ? 'bg-white dark:bg-white/10 text-primary shadow-sm shadow-primary/10' 
-                        : 'text-slate-400 hover:text-slate-600'
-                    }`}
-                  >
-                    {m === 'day' ? t('reports.filters.day') : m === 'week' ? t('reports.filters.week') : t('reports.filters.range')}
-                  </button>
-                ))}
+          <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+              <div className="space-y-3">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2 flex items-center gap-2">
+                  <Filter size={14} /> {t('reports.filters.title')}
+                </label>
+                <div className="bg-slate-50 dark:bg-black/20 p-1.5 rounded-2xl flex gap-1">
+                  {(['day', 'week', 'range'] as const).map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => applyFilter(m)}
+                      className={`flex-1 py-2 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-tight transition-all ${
+                        filterMode === m 
+                          ? 'bg-white dark:bg-white/10 text-primary shadow-sm shadow-primary/10' 
+                          : 'text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      {m === 'day' ? t('reports.filters.day') : m === 'week' ? t('reports.filters.week') : t('reports.filters.range')}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              <CustomSelect 
+                label={t('reports.type.title')}
+                value={type}
+                onChange={(val) => setType(val)}
+                options={[
+                  { value: 'sales', label: t('reports.type.sales') },
+                  { value: 'purchases', label: t('reports.type.purchases') }
+                ]}
+              />
+
+              {filterMode === 'range' && (
+                <>
+                  <div className="animate-in slide-in-from-right-5 duration-500">
+                    <DatePicker
+                      label={t('reports.date.from')}
+                      value={startDate}
+                      onChange={(val) => setStartDate(val)}
+                    />
+                  </div>
+                  <div className="animate-in slide-in-from-right-10 duration-500">
+                    <DatePicker
+                      label={t('reports.date.to')}
+                      value={endDate}
+                      onChange={(val) => setEndDate(val)}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            <CustomSelect 
-              label={t('reports.type.title')}
-              value={type}
-              onChange={(val) => setType(val)}
-              options={[
-                { value: 'sales', label: t('reports.type.sales') },
-                { value: 'purchases', label: t('reports.type.purchases') }
-              ]}
-            />
-
-            {filterMode === 'range' ? (
-              <>
-                <div className="animate-in slide-in-from-right-5 duration-500">
-                  <DatePicker
-                    label={t('reports.date.from')}
-                    value={startDate}
-                    onChange={(val) => setStartDate(val)}
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1 space-y-3 w-full">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">{t('reports.searchInResults')}</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                  <input 
+                    type="text"
+                    placeholder={t('reports.searchPlaceholder')}
+                    className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3.5 pl-10 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <div className="animate-in slide-in-from-right-10 duration-500 space-y-3">
-                  <DatePicker
-                    label={t('reports.date.to')}
-                    value={endDate}
-                    onChange={(val) => setEndDate(val)}
-                  />
-                </div>
-                {/* Search column - we move the search here or keep it at the end */}
-              </>
-            ) : (
-              // Empty space fillers to keep search at the end if not in range mode
-              <div className="hidden lg:block lg:col-span-2" />
-            )}
-
-            <div className="space-y-3">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-2">{t('reports.searchInResults')}</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input 
-                  type="text"
-                  placeholder={t('reports.searchPlaceholder')}
-                  className="w-full bg-slate-50 dark:bg-black/20 border-none rounded-2xl p-3.5 pl-10 text-sm font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20"
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
               </div>
-            </div>
 
-            {/* Range Action Button - Separated for better alignment */}
-            {filterMode === 'range' && (
-              <div className="col-span-1 md:col-span-2 lg:col-span-5 flex justify-end mt-2 animate-in fade-in duration-700">
+              {filterMode === 'range' && (
                 <button 
                   onClick={generateReport}
                   disabled={loading || !startDate || !endDate}
-                  className="bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-8 py-3.5 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-black text-sm min-w-[200px]"
+                  className="w-full sm:w-auto bg-primary hover:bg-primary-dark disabled:opacity-50 text-white px-8 py-3.5 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-black text-sm min-w-[160px]"
                 >
                   {loading ? <span className="animate-spin text-xl">⏳</span> : <><Search size={16} /> {t('reports.filters.range')}</>}
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Results Table Listing */}
@@ -351,7 +348,7 @@ export default function ReportsPage() {
                             </span>
                           </td>
                           <td className="px-8 py-5 text-right">
-                            <span className="font-black text-secondary dark:text-white whitespace-nowrap">Q {Number(item.total).toFixed(2)}</span>
+                            <span className="font-black text-secondary dark:text-white whitespace-nowrap text-xs">Q {Math.floor(item.total).toLocaleString()}</span>
                           </td>
                         </tr>
                         {expandedRows.includes(item.id) && (
@@ -388,15 +385,15 @@ export default function ReportsPage() {
                                       <tr key={idx}>
                                         <td className="py-3 font-bold text-secondary dark:text-white">{detail.product?.nombre}</td>
                                         <td className="py-3 text-center font-black">{detail.cantidad}</td>
-                                        <td className="py-3 text-right whitespace-nowrap">Q {Number(detail.precio || 0).toFixed(2)}</td>
-                                        <td className="py-3 text-right font-black whitespace-nowrap">Q {Number((detail.cantidad * (detail.precio || 0))).toFixed(2)}</td>
+                                        <td className="py-3 text-right whitespace-nowrap text-[10px]">Q {Math.floor(detail.precio || 0).toLocaleString()}</td>
+                                        <td className="py-3 text-right font-black whitespace-nowrap text-[10px]">Q {Math.floor(detail.cantidad * (detail.precio || 0)).toLocaleString()}</td>
                                       </tr>
                                     ))}
                                   </tbody>
                                   <tfoot className="border-t-2 border-slate-200 dark:border-white/10">
                                     <tr>
                                       <td colSpan={3} className="py-4 text-right font-black text-slate-500 uppercase tracking-widest text-[10px]">{t('common.total')}</td>
-                                      <td className="py-4 text-right font-black text-xl text-primary whitespace-nowrap">Q {Number(item.total).toFixed(2)}</td>
+                                      <td className="py-4 text-right font-black text-lg text-primary whitespace-nowrap">Q {Math.floor(item.total).toLocaleString()}</td>
                                     </tr>
                                   </tfoot>
                                 </table>

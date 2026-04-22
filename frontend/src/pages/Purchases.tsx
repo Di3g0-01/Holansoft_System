@@ -101,13 +101,13 @@ export default function PurchasesPage() {
       </div>
 
       <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5">
-        <div className="p-4 border-b border-gray-100 dark:border-white/5 flex gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="p-4 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4">
+          <div className="relative w-full sm:flex-1 sm:max-w-md">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
             <input 
               type="text" 
               placeholder={t('purchases.searchPlaceholder')}
-              className="w-full bg-[#F8FAFC] dark:bg-black/20 border-none rounded-2xl py-4 pl-12 pr-6 font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full bg-[#F8FAFC] dark:bg-black/20 border-none rounded-2xl py-3 sm:py-4 pl-12 pr-6 font-bold text-secondary dark:text-white outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm sm:text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -159,8 +159,8 @@ export default function PurchasesPage() {
                         {purchase.items?.length || 0}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold whitespace-nowrap">
-                      Q {Number(purchase.total).toFixed(2)}
+                    <td className="px-6 py-4 text-right text-gray-900 dark:text-white font-bold whitespace-nowrap text-xs">
+                      Q {Math.floor(purchase.total).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">

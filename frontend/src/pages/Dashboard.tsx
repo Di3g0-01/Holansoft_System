@@ -162,34 +162,34 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-10 animate-fade-in p-2 relative">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+    <div className="space-y-6 sm:space-y-10 animate-fade-in p-1 sm:p-2 relative">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="relative">
-          <h2 className="text-4xl font-black text-secondary tracking-tighter">{t('dashboard.title')}</h2>
+          <h2 className="text-3xl sm:text-4xl font-black text-secondary tracking-tighter">{t('dashboard.title')}</h2>
           <div className="h-1.5 w-16 bg-primary rounded-full mt-2"></div>
-          <p className="text-slate-500 font-bold mt-3 max-w-md uppercase tracking-widest text-[10px] opacity-70">{t('dashboard.subtitle')}</p>
+          <p className="text-slate-500 font-bold mt-3 max-w-md uppercase tracking-widest text-[9px] sm:text-[10px] opacity-70 leading-relaxed">{t('dashboard.subtitle')}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
             <button 
               onClick={fetchStats}
-              className="bg-white text-secondary font-black px-6 py-3 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md active:scale-95 transition-all flex items-center gap-2 group"
+              className="flex-1 sm:flex-none justify-center bg-white text-secondary font-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 hover:shadow-md active:scale-95 transition-all flex items-center gap-2 group text-sm sm:text-base"
             >
                 <div className={`${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-500`}>
-                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 {t('common.update')}
             </button>
             <button 
               onClick={handleExportPDF}
-              className="bg-secondary text-white font-black px-6 py-3 rounded-2xl shadow-secondary hover:translate-y-[-2px] active:scale-95 transition-all flex items-center gap-2"
+              className="flex-1 sm:flex-none justify-center bg-secondary text-white font-black px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-secondary hover:translate-y-[-2px] active:scale-95 transition-all flex items-center gap-2 text-sm sm:text-base"
             >
-                <Download className="w-5 h-5" />
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                 {t('common.export')}
             </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
         <div 
           onClick={() => navigate('/inventory')}
           className="relative group overflow-hidden cursor-pointer"
@@ -239,7 +239,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-400 uppercase tracking-widest group-hover:text-white/80 transition-colors">{t('dashboard.stats.purchases')}</p>
-              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.recentPurchases.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {Math.floor(stats.recentPurchases).toLocaleString('es-GT')}</h3>
             </div>
             <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between text-xs font-bold text-purple-600 group-hover:text-white transition-colors">
               <span className="flex items-center gap-1">{t('dashboard.actions.viewPurchases')} <ArrowUpRight size={14} /></span>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-black text-slate-400 uppercase tracking-widest group-hover:text-white/80 transition-colors">{t('dashboard.stats.sales')}</p>
-              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {stats.recentSales.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</h3>
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1 group-hover:text-white transition-colors whitespace-nowrap overflow-hidden text-ellipsis">Q {Math.floor(stats.recentSales).toLocaleString('es-GT')}</h3>
             </div>
             <div className="mt-auto pt-6 border-t border-slate-50 dark:border-white/5 flex items-center justify-between text-xs font-bold text-green-600 group-hover:text-white transition-colors">
               <span className="flex items-center gap-1">{t('dashboard.actions.viewReports')} <ArrowUpRight size={14} /></span>
@@ -271,7 +271,7 @@ export default function DashboardPage() {
         <DashboardCharts />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 pb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 mt-12 pb-10">
           <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full translate-x-10 translate-y-[-10px] group-hover:scale-150 transition-transform duration-700"></div>
               <div className="flex items-center justify-between mb-8">

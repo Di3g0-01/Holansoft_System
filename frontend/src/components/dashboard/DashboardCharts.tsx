@@ -69,7 +69,7 @@ export default function DashboardCharts() {
         <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-8 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20 flex items-center justify-between">
           <div>
             <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.salesWeekly')}</p>
-            <h3 className="text-4xl font-black">Q {weeklySales.reduce((a: number, b: any) => a + b.total, 0).toLocaleString()}</h3>
+            <h3 className="text-3xl sm:text-4xl font-black">Q {Math.floor(weeklySales.reduce((a: number, b: any) => a + b.total, 0)).toLocaleString()}</h3>
           </div>
           <div className="bg-white/10 w-14 h-14 flex items-center justify-center rounded-3xl font-black text-xl text-white">Q</div>
         </div>
@@ -77,15 +77,15 @@ export default function DashboardCharts() {
         <div className="bg-white dark:bg-surface-dark p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between">
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.inventoryHealth')}</p>
-            <div className="flex items-center gap-2">
-              <h3 className="text-4xl font-black text-secondary dark:text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+              <h3 className="text-3xl sm:text-4xl font-black text-secondary dark:text-white leading-tight">
                 {(() => {
                   const total = rawStockStatus.reduce((a: number, b: any) => a + (b.value || 0), 0);
                   const good = rawStockStatus.find((s: any) => s.name === 'goodStock')?.value || 0;
                   return total > 0 ? Math.round((good / total) * 100) : 100;
                 })()}%
               </h3>
-              <span className="text-emerald-500 font-bold text-sm">{t('dashboard.charts.optimal')}</span>
+              <span className="text-emerald-500 font-bold text-[10px] sm:text-sm whitespace-nowrap bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full w-fit">{t('dashboard.charts.optimal')}</span>
             </div>
           </div>
           <div className="bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-3xl text-emerald-500"><CheckCircle size={32} /></div>
@@ -94,7 +94,7 @@ export default function DashboardCharts() {
         <div className="bg-white dark:bg-surface-dark p-8 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-white/5 flex items-center justify-between">
           <div>
             <p className="text-slate-400 font-black uppercase tracking-widest text-xs mb-2">{t('dashboard.charts.stockAlerts')}</p>
-            <h3 className="text-4xl font-black text-secondary dark:text-white">
+            <h3 className="text-3xl sm:text-4xl font-black text-secondary dark:text-white mt-1">
               {rawStockStatus.find((s: any) => s.name === 'lowStock')?.value ?? 0}
             </h3>
           </div>
@@ -144,22 +144,22 @@ export default function DashboardCharts() {
               </h4>
             </div>
             
-            <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+            <div className="flex flex-wrap bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
               <button 
                 onClick={() => setPeriod('day')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === 'day' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-sm font-bold transition-all ${period === 'day' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
               >
                 {t('dashboard.charts.periods.day')}
               </button>
               <button 
                 onClick={() => setPeriod('week')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === 'week' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-sm font-bold transition-all ${period === 'week' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
               >
                 {t('dashboard.charts.periods.week')}
               </button>
               <button 
                 onClick={() => setPeriod('month')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === 'month' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-sm font-bold transition-all ${period === 'month' ? 'bg-white dark:bg-secondary shadow-sm text-primary' : 'text-slate-500 hover:text-secondary dark:hover:text-white'}`}
               >
                 {t('dashboard.charts.periods.month')}
               </button>
