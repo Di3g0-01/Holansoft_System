@@ -13,7 +13,7 @@ export class ClientsController {
   }
 
   @Post()
-  create(@Body('name') name: string) {
-    return this.clientsService.create(name);
+  create(@Body() body: { name: string }) {
+    return this.clientsService.create(body.name);
   }
 }

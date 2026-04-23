@@ -4,6 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import InputDialog from '../components/ui/InputDialog';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CustomSelect from '../components/ui/CustomSelect';
 import { generateReceipt } from '../lib/pdfGenerator';
 import type { Product } from '../types';
@@ -32,6 +33,7 @@ export default function PosPage() {
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [printConfirm, setPrintConfirm] = useState<{ open: boolean; payload: any }>({ open: false, payload: null });
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -149,13 +151,8 @@ export default function PosPage() {
       await api.post('/sales', payload);
       toast.success('Venta Procesada');
 
-      // Attempt PDF Generation
-      try {
-        generateReceipt(payload);
-      } catch (pdfErr) {
-        console.error('Error generating PDF', pdfErr);
-        toast.error('Venta guardada pero hubo error generando PDF');
-      }
+      // Instead of auto-generating, we ask first
+      setPrintConfirm({ open: true, payload });
 
       setCart([]);
       setSelectedCustomer('Consumidor Final');
@@ -178,6 +175,18 @@ export default function PosPage() {
       console.error('Error saving customer:', err);
       toast.error('Error al guardar el cliente');
     }
+  };
+
+  const handlePrintConfirm = () => {
+    if (printConfirm.payload) {
+      try {
+        generateReceipt(printConfirm.payload);
+      } catch (pdfErr) {
+        console.error('Error generating PDF', pdfErr);
+        toast.error('Hubo un error generando el PDF');
+      }
+    }
+    setPrintConfirm({ open: false, payload: null });
   };
 
   return (
@@ -363,6 +372,17 @@ export default function PosPage() {
         placeholder="Nombre del cliente..."
         onConfirm={handleAddCustomer}
         onCancel={() => setIsClientModalOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={printConfirm.open}
+        title="¿Desea imprimir la factura?"
+        message="La venta ha sido registrada con éxito. ¿Desea generar el documento para imprimir?"
+        confirmLabel="Sí, Imprimir"
+        cancelLabel="No, Cerrar"
+        variant="primary"
+        onConfirm={handlePrintConfirm}
+        onCancel={() => setPrintConfirm({ open: false, payload: null })}
       />
 
     </div>

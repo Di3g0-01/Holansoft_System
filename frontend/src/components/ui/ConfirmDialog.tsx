@@ -7,7 +7,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: 'danger' | 'warning';
+  variant?: 'danger' | 'warning' | 'primary';
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -38,10 +38,17 @@ export default function ConfirmDialog({
     danger: {
       icon: 'bg-red-100 text-red-600',
       btn: 'bg-red-600 hover:bg-red-700 shadow-red-200',
+      IconComponent: AlertTriangle
     },
     warning: {
       icon: 'bg-amber-100 text-amber-600',
       btn: 'bg-amber-500 hover:bg-amber-600 shadow-amber-200',
+      IconComponent: AlertTriangle
+    },
+    primary: {
+      icon: 'bg-primary/10 text-primary',
+      btn: 'bg-primary hover:bg-primary-dark shadow-primary/20',
+      IconComponent: AlertTriangle // Can be changed if needed, but keeping it simple
     },
   };
 
@@ -61,7 +68,7 @@ export default function ConfirmDialog({
         <div className="p-6 sm:p-8 pb-0 flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${colors.icon} shrink-0`}>
-              <AlertTriangle size={24} />
+              <colors.IconComponent size={24} />
             </div>
             <h3 className="text-lg sm:text-xl font-black text-secondary dark:text-white leading-tight">{title}</h3>
           </div>

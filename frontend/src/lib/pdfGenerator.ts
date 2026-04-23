@@ -20,7 +20,7 @@ export const generateReceipt = (sale: any) => {
   doc.text('Ticket de Venta', pageWidth / 2, 16, { align: 'center' });
   
   doc.setFontSize(8);
-  doc.text(`Fecha: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth / 2, 22, { align: 'center' });
+  doc.text(`Fecha: ${format(new Date(sale.date || Date.now()), 'dd/MM/yyyy HH:mm')}`, pageWidth / 2, 22, { align: 'center' });
   doc.text(`Ticket Nº: ${sale.rpNumber}`, pageWidth / 2, 26, { align: 'center' });
   doc.text(`Cliente: ${sale.customer}`, pageWidth / 2, 30, { align: 'center' });
 

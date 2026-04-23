@@ -4,7 +4,8 @@ import { format } from 'date-fns';
 import EditSaleModal from '../components/sales/EditSaleModal';
 import SaleDetailsModal from '../components/sales/SaleDetailsModal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
-import { Eye, Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2, Printer } from 'lucide-react';
+import { generateReceipt } from '../lib/pdfGenerator';
 import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import type { Sale } from '../types';
@@ -168,12 +169,29 @@ export default function SalesPage() {
                         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           <button 
                             onClick={() => {
-                              setSelectedSale(sale);
-                              setIsDetailsModalOpen(true);
+                              try {
+                                const payload = {
+                                  rpNumber: sale.rpNumber,
+                                  customer: sale.customer,
+                                  date: sale.date,
+                                  total: sale.total,
+                                  items: sale.items?.map((item: any) => ({
+                                    productId: item.id_producto,
+                                    quantity: item.cantidad,
+                                    price: Number(item.precio),
+                                    name: item.product?.nombre
+                                  }))
+                                };
+                                generateReceipt(payload);
+                              } catch (err) {
+                                console.error('Error printing from list:', err);
+                                toast.error('Error al generar factura');
+                              }
                             }}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
+                            className="p-2 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-lg transition-all"
+                            title="Imprimir factura"
                           >
-                            <Eye size={16} />
+                            <Printer size={16} />
                           </button>
                           <button 
                             onClick={() => {
@@ -181,12 +199,14 @@ export default function SalesPage() {
                               setIsEditModalOpen(true);
                             }}
                             className="p-2 hover:bg-orange-500/10 text-slate-400 hover:text-orange-500 rounded-lg transition-all"
+                            title="Editar"
                           >
                             <Edit2 size={16} />
                           </button>
                           <button 
                             onClick={() => handleDeleteRequest(sale.id)}
                             className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-500 rounded-lg transition-all"
+                            title="Eliminar"
                           >
                             <Trash2 size={16} />
                           </button>
