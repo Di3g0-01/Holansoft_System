@@ -25,7 +25,7 @@ export default function PosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  
+
   // Client state management
   const [customers, setCustomers] = useState<string[]>(['Consumidor Final']);
   const [selectedCustomer, setSelectedCustomer] = useState('Consumidor Final');
@@ -47,7 +47,7 @@ export default function PosPage() {
     }
   };
 
-  const filteredProducts = products.filter(p => {
+  let filteredProducts = products.filter(p => {
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -56,6 +56,10 @@ export default function PosPage() {
       String(p.category?.name || '').toLowerCase().includes(term)
     );
   });
+
+  if (!searchTerm.trim()) {
+    filteredProducts = filteredProducts.slice(0, 10);
+  }
 
   const addToCart = (product: Product) => {
     if (Number(product.cantidad) < 1) {
@@ -84,7 +88,7 @@ export default function PosPage() {
 
   const updateQuantity = (productId: number, newQty: number) => {
     if (newQty < 0) return;
-    
+
     setCart((prev: CartItem[]) => prev.map((item: CartItem) => {
       if (item.productId === productId) {
         if (newQty > item.stock && newQty > 0) {
@@ -130,7 +134,7 @@ export default function PosPage() {
 
       await api.post('/sales', payload);
       toast.success('Venta Procesada');
-      
+
       // Attempt PDF Generation
       try {
         generateReceipt(payload);
@@ -157,7 +161,7 @@ export default function PosPage() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full lg:h-[calc(100vh-theme(spacing.24))] overflow-hidden -m-2 p-2">
-      
+
       {/* Left Area: Product Search and Grid */}
       <div className="flex-1 flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden min-h-[400px]">
         <div className="p-4 border-b border-gray-100 dark:border-white/5 space-y-4">
@@ -166,10 +170,10 @@ export default function PosPage() {
           </div>
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
+            <input
               autoFocus
-              type="text" 
-              placeholder="Código o nombre..." 
+              type="text"
+              placeholder="Código o nombre..."
               className="w-full pl-12 pr-4 py-3 sm:py-4 border border-gray-200 dark:border-white/10 focus:border-primary/50 bg-white dark:bg-black/20 rounded-2xl outline-none text-base sm:text-lg font-bold text-secondary dark:text-white shadow-sm transition-all"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -191,7 +195,7 @@ export default function PosPage() {
             {/* Table Body */}
             <div className="flex-1 overflow-y-auto divide-y divide-slate-50 dark:divide-white/5">
               {filteredProducts.map(product => (
-                <div 
+                <div
                   key={product.id_producto}
                   onClick={() => addToCart(product)}
                   className="flex items-center px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer transition-colors group"
@@ -203,6 +207,7 @@ export default function PosPage() {
                     <p className="text-[10px] font-black text-secondary dark:text-white truncate leading-tight uppercase">
                       {product.nombre}
                     </p>
+                    <p className="text-[9px] text-slate-400 font-bold mt-0.5">Stock: {product.cantidad || 0}</p>
                   </div>
                   <div className="w-20 shrink-0 text-right">
                     <p className="text-[10px] font-black text-primary">
@@ -211,7 +216,7 @@ export default function PosPage() {
                   </div>
                 </div>
               ))}
-              
+
               {filteredProducts.length === 0 && (
                 <div className="p-8 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">
                   {t('sales.noResults')}
@@ -224,7 +229,7 @@ export default function PosPage() {
 
       {/* Right Area: Checkout / Cart */}
       <div className="w-full lg:w-[400px] flex flex-col bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-white/5 overflow-hidden shrink-0">
-        
+
         {/* Customer Selector */}
         <div className="p-6 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/10">
           <label className="text-[10px] font-black text-secondary/50 dark:text-gray-400 uppercase tracking-widest block mb-2">CLIENTE</label>
@@ -236,7 +241,7 @@ export default function PosPage() {
                 onChange={value => setSelectedCustomer(value)}
               />
             </div>
-            <button 
+            <button
               onClick={() => setIsClientModalOpen(true)}
               className="bg-primary hover:bg-primary-dark text-white p-3 rounded-2xl shadow-sm transition-transform active:scale-95"
             >
@@ -253,16 +258,16 @@ export default function PosPage() {
               <p className="font-bold uppercase tracking-widest text-sm">CARRITO VACÍO</p>
             </div>
           )}
-          
+
           {cart.map(item => (
             <div key={item.productId} className="bg-white dark:bg-black/20 border border-gray-100 dark:border-white/5 rounded-2xl p-4 shadow-sm relative group overflow-hidden">
-              <button 
+              <button
                 onClick={() => removeFromCart(item.productId)}
                 className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <X size={16} />
               </button>
-              
+
               <div className="pr-6">
                 <h4 className="font-black text-secondary dark:text-white mb-3 text-sm leading-tight">{item.name}</h4>
                 <div className="flex items-center justify-between mt-2">
@@ -272,21 +277,21 @@ export default function PosPage() {
                     </span>
                     <span className="text-xs text-gray-500 font-bold">Q{Number(item.price).toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="flex items-center border border-gray-200 dark:border-white/10 rounded-lg">
-                    <button 
+                    <button
                       onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                       className="px-2 py-1 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-l-lg transition-colors"
                     >
                       <Minus size={14} />
                     </button>
-                    <input 
+                    <input
                       type="number"
                       className="w-10 bg-transparent text-center text-sm font-bold border-none outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       value={item.quantity}
                       onChange={e => updateQuantity(item.productId, Number(e.target.value))}
                     />
-                    <button 
+                    <button
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                       className="px-2 py-1 text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-r-lg transition-colors"
                     >
@@ -309,16 +314,16 @@ export default function PosPage() {
             <span className="text-secondary dark:text-white font-black text-xl">Total</span>
             <span className="text-primary font-black text-3xl">Q{calculateTotal().toFixed(2)}</span>
           </div>
-          
+
           <div className="flex gap-3">
-            <button 
+            <button
               onClick={() => setCart([])}
               disabled={cart.length === 0}
               className="bg-red-100 text-red-600 hover:bg-red-200 p-4 rounded-2xl transition-colors disabled:opacity-50 active:scale-95"
             >
               <Trash2 size={24} />
             </button>
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={cart.length === 0 || loading}
               className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-black py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 active:scale-95"

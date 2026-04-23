@@ -26,7 +26,7 @@ interface PurchaseCartItem {
 
 export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurchaseModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<PurchaseCartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderNumber] = useState(`C-${Date.now().toString().slice(-6)}`);
@@ -38,25 +38,21 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
   const { t } = useLanguage();
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchTerm.trim()) {
-        searchProducts();
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
-
-  const searchProducts = async () => {
-    try {
-      const res = await api.get(`/products?search=${searchTerm}`);
-      setSearchResults(res.data);
-    } catch (err) {
-      console.error(err);
+    if (isOpen) {
+      api.get('/products')
+        .then(res => setAllProducts(res.data))
+        .catch(console.error);
     }
-  };
+  }, [isOpen]);
+
+  const searchResults = searchTerm.trim() ? allProducts.filter(p => {
+    const term = searchTerm.toLowerCase();
+    return (
+      String(p.nombre || '').toLowerCase().includes(term) ||
+      String(p.code || '').toLowerCase().includes(term) ||
+      String(p.category?.name || '').toLowerCase().includes(term)
+    );
+  }).slice(0, 10) : [];
 
   const addToCart = (product: Product) => {
     const existing = cart.find(item => item.productId === product.id_producto);
@@ -67,7 +63,7 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
         productId: product.id_producto,
         name: product.nombre,
         quantity: 1,
-        cost: 0,
+        cost: product.precio_costo || 0,
         stock: product.cantidad || 0,
         precio_unidad: product.precio_unidad || 0,
         precio_docena: product.precio_docena || 0,
@@ -76,7 +72,6 @@ export default function AddPurchaseModal({ isOpen, onClose, onSuccess }: AddPurc
       setCart([...cart, newItem]);
     }
     setSearchTerm('');
-    setSearchResults([]);
   };
 
   const updateQuantity = (productId: number, newQty: number) => {

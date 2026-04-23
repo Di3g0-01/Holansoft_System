@@ -45,22 +45,22 @@ export default function LoginPage() {
       {/* Login Card */}
       <div className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-premium overflow-hidden relative z-10 animate-fade-in border border-white">
         
-        <div className="p-8 sm:p-14">
+        <div className="p-6 sm:p-8">
           {/* Header */}
-          <div className="flex flex-col items-center mb-12">
-            <div className="relative mb-8 text-white">
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative mb-4 text-white">
                <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full"></div>
-               <div className="relative bg-gradient-to-br from-primary to-primary-dark p-6 rounded-[2rem] shadow-primary transform transition-transform hover:scale-110 active:scale-95 cursor-pointer">
-                  <BookOpen className="w-12 h-12" />
+               <div className="relative bg-gradient-to-br from-primary to-primary-dark p-4 rounded-[1.5rem] shadow-primary transform transition-transform hover:scale-110 active:scale-95 cursor-pointer">
+                  <BookOpen className="w-10 h-10" />
                </div>
             </div>
-            <h1 className="text-5xl font-black text-secondary tracking-tighter mb-3">HolanSoft</h1>
-            <div className="h-1.5 w-12 bg-primary rounded-full mb-4"></div>
-            <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs text-center">Gestión Inteligente</p>
+            <h1 className="text-4xl font-black text-secondary tracking-tighter mb-2">HolanSoft</h1>
+            <div className="h-1.5 w-12 bg-primary rounded-full mb-2"></div>
+            <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-[10px] text-center">Gestión Inteligente</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-7">
+          <form onSubmit={handleLogin} className="space-y-5">
             {error && (
               <div className="bg-red-50/50 backdrop-blur-md border-2 border-red-100 text-red-600 p-5 rounded-3xl text-sm font-black flex items-center gap-4 animate-shake">
                 <div className="bg-red-100 p-2 rounded-full">
@@ -74,12 +74,12 @@ export default function LoginPage() {
               <label className="text-sm font-black text-secondary/60 ml-2 uppercase tracking-wider">Usuario</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-primary transition-all duration-300">
-                  <User size={22} />
+                  <User size={20} />
                 </div>
                 <input 
                   type="text" 
                   required 
-                  className="block w-full pl-14 pr-5 py-5 rounded-3xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-lg placeholder:text-slate-300 shadow-sm"
+                  className="block w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-base placeholder:text-slate-300 shadow-sm"
                   placeholder="admin"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -91,12 +91,12 @@ export default function LoginPage() {
               <label className="text-sm font-black text-secondary/60 ml-2 uppercase tracking-wider">Contraseña</label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-primary transition-all duration-300">
-                  <Lock size={22} />
+                  <Lock size={20} />
                 </div>
                 <input 
                   type={showPassword ? 'text' : 'password'} 
                   required 
-                  className="block w-full pl-14 pr-14 py-5 rounded-3xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-lg placeholder:text-slate-300 shadow-sm"
+                  className="block w-full pl-12 pr-12 py-3.5 rounded-2xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-base placeholder:text-slate-300 shadow-sm"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -106,7 +106,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-300 hover:text-primary transition-colors"
                 >
-                  {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
@@ -127,23 +127,23 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary active:scale-[0.97] text-white py-5 rounded-3xl font-black text-xl shadow-primary transition-all flex items-center justify-center gap-4 disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
+              className="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary active:scale-[0.97] text-white py-3.5 rounded-2xl font-black text-lg shadow-primary transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed group relative overflow-hidden"
             >
               {loading ? (
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  <LogIn className="w-7 h-7 transition-transform group-hover:translate-x-1.5" />
+                  <LogIn className="w-6 h-6 transition-transform group-hover:translate-x-1.5" />
                   <span>Ingresar al Sistema</span>
                 </>
               )}
             </button>
           </form>
 
-          <footer className="mt-14 text-center">
-            <p className="text-slate-400 text-sm font-bold flex flex-col gap-1 items-center">
+          <footer className="mt-8 text-center">
+            <p className="text-slate-400 text-xs font-bold flex flex-col gap-1 items-center">
               <span>Versión 2.0 &bull; 2026</span>
-              <span className="font-black text-secondary text-base">H O L A N S O F T</span>
+              <span className="font-black text-secondary text-sm">H O L A N S O F T</span>
             </p>
           </footer>
         </div>

@@ -19,6 +19,7 @@ interface FormData {
   size: string;
   type: string;
   categoryId: string;
+  priceCost: string;
   priceUnit: string;
   priceDozen: string;
   priceWholesale: string;
@@ -35,6 +36,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
     size: '',
     type: '',
     categoryId: '',
+    priceCost: '',
     priceUnit: '',
     priceDozen: '',
     priceWholesale: '',
@@ -55,6 +57,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
           size: product.tamano || '',
           type: product.tipo || '',
           categoryId: product.id_categoria?.toString() || product.category?.id?.toString() || '',
+          priceCost: product.precio_costo?.toString() || '',
           priceUnit: product.precio_unidad?.toString() || '',
           priceDozen: product.precio_docena?.toString() || '',
           priceWholesale: product.precio_mayoreo?.toString() || '',
@@ -99,6 +102,7 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
         tamano: formData.size,
         tipo: formData.type,
         id_categoria: formData.categoryId ? Number(formData.categoryId) : null,
+        precio_costo: Number(formData.priceCost),
         precio_unidad: Number(formData.priceUnit),
         precio_docena: Number(formData.priceDozen),
         precio_mayoreo: Number(formData.priceWholesale),
@@ -245,7 +249,21 @@ export default function EditProductModal({ isOpen, onClose, onSuccess, product }
               <span className="text-secondary/60 flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full font-black text-xs">Q</span>
               <span className="text-xs font-black uppercase tracking-[0.2em]">{t('inventory.form.priceSchema')}</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">Costo</label>
+                <div className="relative">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-secondary/40 font-bold">Q</span>
+                  <input 
+                    required
+                    type="number"
+                    step="0.01"
+                    className="w-full bg-white border-none rounded-2xl py-4 pl-10 pr-5 text-secondary font-black outline-none shadow-sm focus:shadow-md transition-shadow"
+                    value={formData.priceCost}
+                    onChange={e => setFormData({...formData, priceCost: e.target.value})}
+                  />
+                </div>
+              </div>
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-secondary/40 uppercase tracking-widest ml-1">{t('inventory.form.unit')}</label>
                 <div className="relative">

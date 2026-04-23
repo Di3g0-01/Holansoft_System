@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, Check, Download, FilePlus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import api from '../../lib/api';
@@ -17,6 +17,7 @@ interface ParsedProduct {
   size: string;
   type: string;
   categoryId?: number | null;
+  priceCost: number;
   priceUnit: number;
   priceDozen: number;
   priceWholesale: number;
@@ -30,6 +31,15 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
   const [parsedData, setParsedData] = useState<ParsedProduct[]>([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [categories, setCategories] = useState<{ id: number, nombre: string, name?: string }[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      api.get('/categories')
+        .then(res => setCategories(res.data))
+        .catch(console.error);
+    }
+  }, [isOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -49,18 +59,27 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
         const worksheet = workbook.Sheets[firstSheetName];
         const jsonData = XLSX.utils.sheet_to_json<any>(worksheet);
 
-        const mapped: ParsedProduct[] = jsonData.map(row => ({
-          code: String(row['Codigo'] || row['code'] || ''),
-          name: String(row['Nombre'] || row['name'] || ''),
-          brand: String(row['Marca'] || row['brand'] || ''),
-          size: String(row['Tamaño'] || row['size'] || ''),
-          type: String(row['Tipo'] || row['type'] || ''),
-          priceUnit: Number(row['Precio Unidad'] || row['priceUnit'] || 0),
-          priceDozen: Number(row['Docena'] || row['priceDozen'] || 0),
-          priceWholesale: Number(row['Mayoreo'] || row['priceWholesale'] || 0),
-          stock: Number(row['Cantidad'] || row['stock'] || 0),
-          alertQuantity: Number(row['Alerta'] || row['alertQuantity'] || 5),
-        })).filter(p => p.name && p.code); // Basic validation
+        const mapped: ParsedProduct[] = jsonData.map(row => {
+          const categoryName = String(row['Categoría'] || row['Categoria'] || row['category'] || '').trim().toLowerCase();
+          const foundCategory = categoryName 
+            ? categories.find(c => (c.nombre || c.name || '').toLowerCase() === categoryName)
+            : null;
+
+          return {
+            code: String(row['Codigo'] || row['code'] || ''),
+            name: String(row['Nombre'] || row['name'] || ''),
+            brand: String(row['Marca'] || row['brand'] || ''),
+            size: String(row['Tamaño'] || row['size'] || ''),
+            type: String(row['Tipo'] || row['type'] || ''),
+            categoryId: foundCategory ? foundCategory.id : null,
+            priceCost: Number(row['Costo'] || row['cost'] || 0),
+            priceUnit: Number(row['Precio Unidad'] || row['priceUnit'] || 0),
+            priceDozen: Number(row['Docena'] || row['priceDozen'] || 0),
+            priceWholesale: Number(row['Mayoreo'] || row['priceWholesale'] || 0),
+            stock: Number(row['Cantidad'] || row['stock'] || 0),
+            alertQuantity: Number(row['Alerta'] || row['alertQuantity'] || 5),
+          };
+        }).filter(p => p.name && p.code); // Basic validation
 
         setParsedData(mapped);
       } catch (err) {
@@ -79,6 +98,8 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
         'Marca': 'Marca A',
         'Tamaño': 'Grande',
         'Tipo': 'Tipo 1',
+        'Categoría': 'General',
+        'Costo': 8.00,
         'Precio Unidad': 10.50,
         'Docena': 110.00,
         'Mayoreo': 9.00,
@@ -109,7 +130,8 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
           marca: p.brand,
           tamano: p.size,
           tipo: p.type,
-          id_categoria: null,
+          id_categoria: p.categoryId,
+          precio_costo: p.priceCost,
           precio_unidad: p.priceUnit,
           precio_docena: p.priceDozen,
           precio_mayoreo: p.priceWholesale,

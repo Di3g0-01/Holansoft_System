@@ -63,7 +63,7 @@ export default function InventoryPage() {
     if (!confirmDelete.id) return;
     try {
       await api.delete(`/products/${confirmDelete.id}`);
-      toast.success(t('users.messages.successDelete') || 'Producto eliminado con éxito');
+      toast.success(t('inventory.messages.successDelete') || 'Producto eliminado con éxito');
       fetchProducts();
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Error al eliminar');

@@ -30,6 +30,9 @@ export class Product {
   @JoinColumn({ name: 'id_categoria' })
   category: Category;
 
+  @Column('decimal', { precision: 10, scale: 2, name: 'precio_costo', default: 0 })
+  precio_costo: number;
+
   @Column('decimal', { precision: 10, scale: 2, name: 'precio_unidad' })
   precio_unidad: number;
 

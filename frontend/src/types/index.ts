@@ -19,6 +19,7 @@ export interface Product {
   marca?: string;
   tamano?: string;
   tipo?: string;
+  precio_costo?: number;
   precio_unidad: number;
   precio_docena: number;
   precio_mayoreo: number;
