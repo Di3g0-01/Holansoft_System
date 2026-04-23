@@ -36,7 +36,21 @@ export default function PosPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchCustomers();
   }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      const res = await api.get('/clients');
+      const names = res.data.map((c: any) => c.name);
+      if (!names.includes('Consumidor Final')) {
+        names.unshift('Consumidor Final');
+      }
+      setCustomers(names);
+    } catch (err) {
+      console.error('Error fetching customers:', err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -153,10 +167,17 @@ export default function PosPage() {
     }
   };
 
-  const handleAddCustomer = (name: string) => {
-    setCustomers(prev => [...prev, name]);
-    setSelectedCustomer(name);
-    setIsClientModalOpen(false);
+  const handleAddCustomer = async (name: string) => {
+    try {
+      await api.post('/clients', { name });
+      toast.success('Cliente guardado permanentemente');
+      fetchCustomers();
+      setSelectedCustomer(name);
+      setIsClientModalOpen(false);
+    } catch (err) {
+      console.error('Error saving customer:', err);
+      toast.error('Error al guardar el cliente');
+    }
   };
 
   return (

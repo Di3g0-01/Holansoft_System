@@ -13,6 +13,7 @@ import { ReportsModule } from './reports/reports.module';
 import { UsersModule } from './users/users.module';
 import { SettingsModule } from './settings/settings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     UsersModule,
     SettingsModule,
     AnalyticsModule,
+    ClientsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
