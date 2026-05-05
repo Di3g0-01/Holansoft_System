@@ -4,9 +4,16 @@ import api from '../lib/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Save, Loader2, Building2, Phone, MapPin, Mail } from 'lucide-react';
 
+interface StoreProfile {
+  name: string;
+  phone: string;
+  address: string;
+  email: string;
+}
+
 export default function SettingsPage() {
   const { t } = useLanguage();
-  const [profile, setProfile] = useState<any>({
+  const [profile, setProfile] = useState<StoreProfile>({
     name: '',
     phone: '',
     address: '',
