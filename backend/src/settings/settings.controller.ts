@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -17,3 +17,4 @@ export class SettingsController {
     return this.settingsService.updateProfile(updateDto);
   }
 }
+
