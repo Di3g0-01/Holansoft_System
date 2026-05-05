@@ -12,8 +12,8 @@ export class SettingsController {
     return this.settingsService.getProfile();
   }
 
-  @Put(':id')
-  updateProfile(@Param('id') id: string, @Body() updateDto: any) {
-    return this.settingsService.updateProfile(+id, updateDto);
+  @Put()
+  updateProfile(@Body() updateDto: any) {
+    return this.settingsService.updateProfile(updateDto);
   }
 }

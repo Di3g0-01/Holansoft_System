@@ -28,8 +28,8 @@ export class SettingsService {
     return profiles[0];
   }
 
-  async updateProfile(id: number, updateDto: any) {
-    const profile = await this.storeProfileRepository.findOne({ where: { id } });
+  async updateProfile(updateDto: any) {
+    const profile = await this.getProfile();
     if (!profile) throw new NotFoundException('Profile not found');
     
     Object.assign(profile, updateDto);

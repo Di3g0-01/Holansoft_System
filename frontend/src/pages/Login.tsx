@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import api from '../lib/api';
-import { LogIn, User, Lock, Eye, EyeOff, AlertCircle, Loader2, BookOpen } from 'lucide-react';
+import { LogIn, User, Lock, Eye, EyeOff, AlertCircle, Loader2, BookOpen, Check } from 'lucide-react';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,13 +15,39 @@ export default function LoginPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
+  // Load saved credentials on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('remembered_user');
+    const savedPass = localStorage.getItem('remembered_pass');
+    if (savedUser && savedPass) {
+      setUsername(savedUser);
+      setPassword(savedPass);
+    }
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!username.trim() || !password.trim()) {
+      setError('Por favor, ingresa tu usuario y contraseña.');
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await api.post('/auth/login', { username, password });
+      
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('remembered_user', username);
+        localStorage.setItem('remembered_pass', password);
+      } else {
+        localStorage.removeItem('remembered_user');
+        localStorage.removeItem('remembered_pass');
+      }
+
       setAuth(response.data.access_token, response.data.user);
       navigate('/dashboard');
     } catch (err: any) {
@@ -60,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-5" noValidate>
             {error && (
               <div className="bg-red-50/50 backdrop-blur-md border-2 border-red-100 text-red-600 p-5 rounded-3xl text-sm font-black flex items-center gap-4 animate-shake">
                 <div className="bg-red-100 p-2 rounded-full">
@@ -78,7 +105,6 @@ export default function LoginPage() {
                 </div>
                 <input 
                   type="text" 
-                  required 
                   className="block w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-base placeholder:text-slate-300 shadow-sm"
                   placeholder="admin"
                   value={username}
@@ -95,7 +121,6 @@ export default function LoginPage() {
                 </div>
                 <input 
                   type={showPassword ? 'text' : 'password'} 
-                  required 
                   className="block w-full pl-12 pr-12 py-3.5 rounded-2xl border-2 border-slate-100 bg-white/50 focus:bg-white focus:border-primary focus:ring-8 focus:ring-primary/5 outline-none transition-all duration-300 font-bold text-secondary text-base placeholder:text-slate-300 shadow-sm"
                   placeholder="••••••••"
                   value={password}
@@ -114,9 +139,14 @@ export default function LoginPage() {
             <div className="flex items-center justify-between px-2">
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div className="relative flex items-center">
-                  <input type="checkbox" className="peer w-6 h-6 rounded-xl border-2 border-slate-200 text-primary focus:ring-primary/20 appearance-none cursor-pointer transition-all checked:bg-primary checked:border-primary" />
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer w-6 h-6 rounded-xl border-2 border-slate-200 text-primary focus:ring-primary/20 appearance-none cursor-pointer transition-all checked:bg-primary checked:border-primary" 
+                  />
                   <div className="absolute inset-0 flex items-center justify-center text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
-                    <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M0 11l2-2 5 5L18 3l2 2L7 18z"/></svg>
+                    <Check size={16} strokeWidth={4} />
                   </div>
                 </div>
                 <span className="text-sm font-black text-slate-500 group-hover:text-secondary transition-colors">Recordarme</span>
