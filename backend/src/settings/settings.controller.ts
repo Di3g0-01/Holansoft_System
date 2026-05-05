@@ -3,16 +3,16 @@ import { SettingsService } from './settings.service';
 import { AuthGuard } from '@nestjs/passport';
 
 @UseGuards(AuthGuard('jwt'))
-@Controller('settings/profile')
+@Controller('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
-  @Get()
+  @Get('profile')
   getProfile() {
     return this.settingsService.getProfile();
   }
 
-  @Put()
+  @Put('profile')
   updateProfile(@Body() updateDto: any) {
     return this.settingsService.updateProfile(updateDto);
   }
