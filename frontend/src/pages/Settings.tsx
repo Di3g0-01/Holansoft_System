@@ -44,7 +44,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.put('/settings/profile', profile);
+      await api.patch('/settings/profile', profile);
       toast.success(t('common.saveSuccess') || 'Cambios guardados correctamente');
     } catch (err) {
       console.error(err);

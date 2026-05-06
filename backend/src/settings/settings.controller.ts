@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, HttpCode } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -12,9 +12,12 @@ export class SettingsController {
     return this.settingsService.getProfile();
   }
 
-  @Put('profile')
+  @Patch('profile')
+  @HttpCode(200)
   updateProfile(@Body() updateDto: any) {
+    console.log('[SettingsController] Updating profile:', updateDto);
     return this.settingsService.updateProfile(updateDto);
   }
 }
+
 
